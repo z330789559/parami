@@ -326,7 +326,7 @@ pub fn local_testnet_config() -> ChainSpec {
     )
 }
 
-fn prochain_genesis(
+fn parami_genesis(
     initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
@@ -428,19 +428,19 @@ fn prochain_genesis(
     }
 }
 
-/// prochain testnet config
-pub fn prochain_testnet_config() -> ChainSpec {
+/// parami testnet config
+pub fn parami_testnet_config() -> ChainSpec {
     let boot_nodes = vec![
         "/ip4/123.207.140.69/tcp/30333/p2p/12D3KooWK3veKK2VNi3oaweuSYxCsHH7oYWyPo5GTUbgSo3YNuot".parse().unwrap(),
     ];
     // let boot_nodes = vec![];
     let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
     ChainSpec::from_genesis(
-        "Prochain Testnet",
-        "prochain_testnet",
+        "Parami Testnet",
+        "parami_testnet",
         ChainType::Live,
         || {
-            prochain_genesis(
+            parami_genesis(
                 vec![
                     (
                         // 5GTDPKDnqavJMa9Wsqp8ospmjs3riV6zg8obQNLPqn7c3wh5
@@ -515,19 +515,19 @@ pub fn prochain_testnet_config() -> ChainSpec {
     )
 }
 
-/// prochain mainnet config
-pub fn prochain_mainnet_config() -> ChainSpec {
+/// parami mainnet config
+pub fn parami_mainnet_config() -> ChainSpec {
     let boot_nodes = vec![
         "/ip4/123.206.52.244/tcp/30333/p2p/12D3KooWSKWQUi3CwPw4Un2CQshz8uAGxtNfnkTi47sb3r4XbaF8".parse().unwrap(),
     ];
     // let boot_nodes = vec![];
     let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
     ChainSpec::from_genesis(
-        "Prochain Dana",
+        "Parami Dana",
         "Dana",
         ChainType::Live,
         || {
-            prochain_genesis(
+            parami_genesis(
                 vec![
                     (
                         // 5GTDPKDnqavJMa9Wsqp8ospmjs3riV6zg8obQNLPqn7c3wh5

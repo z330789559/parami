@@ -1,6 +1,6 @@
-# Prochain
+# Parami
 
-A new SRML-based Substrate node, ready for hacking.
+A Parami Substrate node, ready for hacking.
 
 # Building
 
@@ -16,7 +16,7 @@ Install required tools:
 .maintain/init.sh
 ```
 
-Build Prochain:
+Build Parami:
 
 ```
 cargo build --release
@@ -24,15 +24,15 @@ cargo build --release
 
 Ensure you have a fresh start if updating from another version:
 ```
-./target/release/prochain purge-chain
+./target/release/parami purge-chain
 ```
 
-To start up the Prochain node, run:
+To start up the Parami node, run:
 ```
-./target/release/prochain \
+./target/release/parami \
   --chain ./testnet/v1.0.0.raw.json \
   --name NodeName \
-  --telemetry-url ws://telemetry.polkadot.io:1024 \
+  --telemetry-url "ws://telemetry.polkadot.io:1024 9" \
   --bootnodes /ip4/39.106.220.238/tcp/30333/p2p/QmXigZJExTmAaXcRfX5gXobei1PDsmhGKuKH98GGciz5qW \
   --validator
 ```
@@ -143,10 +143,10 @@ To start up the Prochain node, run:
     }
 }
 ```
-# Validating on Prochain
-Welcome to the official, in-depth Prochain guide to validating. We're happy that you're interested in validating on Prochain and we'll do our best to provide in-depth documentation on the process below.
+# Validating on Parami
+Welcome to the official, in-depth Parami guide to validating. We're happy that you're interested in validating on Parami and we'll do our best to provide in-depth documentation on the process below.
 
-This document contains all the information one should need to start validating on Prochain using the polkadot-js/apps user interface. We will start with how to setup one's node and proceed to how to key management. To start, we will use the following terminology of keys for the guide:
+This document contains all the information one should need to start validating on Parami using the polkadot-js/apps user interface. We will start with how to setup one's node and proceed to how to key management. To start, we will use the following terminology of keys for the guide:
 
 * stash - the stash keypair is where most of your funds should be located. It can be kept in cold storage if necessary.
 * controller - the controller is the keypair that will control your validator settings. It should have a smaller balance, e.g. 10-100 PRM

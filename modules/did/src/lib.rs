@@ -252,7 +252,7 @@ decl_module! {
 					.ok_or(Error::<T>::Overflow)?;
 			<AllDidCount>::put(new_count);
 
-			let harsher = HarshBuilder::new().salt("prochain did").length(6).init().unwrap();
+			let harsher = HarshBuilder::new().salt("parami did").length(6).init().unwrap();
 			let idx = harsher.encode(&[all_did_count]).unwrap();
 			let idx_hash = T::Hashing::hash(&idx);
 

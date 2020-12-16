@@ -130,7 +130,7 @@ pub enum HTLCStates {
 pub enum HTLCChain {
 	/// Ethereum Mainnet
 	ETHMain,
-	/// Prochain
+	/// Parami
 	PRM,
 }
 
