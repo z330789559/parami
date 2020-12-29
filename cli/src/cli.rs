@@ -35,7 +35,7 @@ pub struct Cli {
 pub enum Subcommand {
 	/// A set of base subcommands handled by `sc_cli`.
 	#[structopt(flatten)]
-	Base(sc_cli::Subcommand),
+	Base(sc_cli::KeySubcommand),
 
 	/// The custom inspect subcommmand for decoding blocks and extrinsics.
 	#[structopt(

@@ -17,7 +17,7 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
-use node_primitives::Balance;
+use parami_node_primitives::Balance;
 use sp_runtime::traits::{Convert, Saturating};
 use sp_runtime::{FixedPointNumber, Perquintill};
 use frame_support::traits::{OnUnbalanced, Currency, Get};
@@ -61,12 +61,15 @@ impl<T: Get<Perquintill>> Convert<Multiplier, Multiplier> for TargetedFeeAdjustm
 	fn convert(multiplier: Multiplier) -> Multiplier {
 		let max_weight = MaximumBlockWeight::get();
 		let block_weight = System::block_weight().total().min(max_weight);
+
+
+		//check
 		let target_weight = (T::get() * max_weight) as u128;
 		let block_weight = block_weight as u128;
 
 		// determines if the first_term is positive
-		let positive = block_weight >= target_weight;
-		let diff_abs = block_weight.max(target_weight) - block_weight.min(target_weight);
+		let positive = block_weight >= target_weight;  //  check
+		let diff_abs = block_weight.max(target_weight) - block_weight.min(target_weight); // check
 		// safe, diff_abs cannot exceed u64.
 		let diff = Multiplier::saturating_from_rational(diff_abs, max_weight.max(1));
 		let diff_squared = diff.saturating_mul(diff);

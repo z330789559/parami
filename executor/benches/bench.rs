@@ -17,12 +17,12 @@
 
 use codec::{Decode, Encode};
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
-use node_executor::Executor;
-use node_primitives::{BlockNumber, Hash};
-use node_runtime::{
+use parami_node_executor::Executor;
+use parami_node_primitives::{BlockNumber, Hash};
+use parami_node_runtime::{
 	Block, BuildStorage, Call, CheckedExtrinsic, GenesisConfig, Header, UncheckedExtrinsic,
 };
-use node_runtime::constants::currency::*;
+use parami_node_runtime::constants::currency::*;
 use node_testing::keyring::*;
 use sp_core::{NativeOrEncoded, NeverNativeValue};
 use sp_core::storage::well_known_keys;
@@ -36,13 +36,13 @@ criterion_group!(benches, bench_execute_block);
 criterion_main!(benches);
 
 /// The wasm runtime code.
-const COMPACT_CODE: &[u8] = node_runtime::WASM_BINARY;
+const COMPACT_CODE: &[u8] = parami_node_runtime::WASM_BINARY;
 
 const GENESIS_HASH: [u8; 32] = [69u8; 32];
 
-const TRANSACTION_VERSION: u32 = node_runtime::VERSION.transaction_version;
+const TRANSACTION_VERSION: u32 = parami_node_runtime::VERSION.transaction_version;
 
-const SPEC_VERSION: u32 = node_runtime::VERSION.spec_version;
+const SPEC_VERSION: u32 = parami_node_runtime::VERSION.spec_version;
 
 const HEAP_PAGES: u64 = 20;
 

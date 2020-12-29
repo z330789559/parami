@@ -36,7 +36,6 @@ use sp_std::{
 };
 
 extern crate num_bigint_dig as num_bigint;
-//extern crate num_traits;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::{One, Zero};
 

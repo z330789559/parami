@@ -19,13 +19,13 @@
 use sc_chain_spec::ChainSpecExtension;
 use sp_core::{Pair, Public, crypto::UncheckedInto, sr25519};
 use serde::{Serialize, Deserialize};
-use node_runtime::{
+use parami_node_runtime::{
     AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig, CouncilConfig, DemocracyConfig,
     GrandpaConfig, ImOnlineConfig, IndicesConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig, ElectionsPhragmenConfig, SudoConfig,
     SystemConfig, TechnicalCommitteeConfig, DidConfig, AdsConfig, WASM_BINARY,
 };
-use node_runtime::Block;
-use node_runtime::constants::currency::*;
+use parami_node_runtime::Block;
+use parami_node_runtime::constants::currency::*;
 use sc_service::ChainType;
 use hex_literal::hex;
 use std::fs::File;
@@ -38,8 +38,8 @@ use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_runtime::{Perbill, traits::{Verify, IdentifyAccount}};
 use hex::FromHex;
 
-pub use node_primitives::{AccountId, Balance, Signature};
-pub use node_runtime::GenesisConfig;
+pub use parami_node_primitives::{AccountId, Balance, Signature};
+pub use parami_node_runtime::GenesisConfig;
 
 type AccountPublic = <Signature as Verify>::Signer;
 
@@ -184,7 +184,7 @@ pub fn testnet_genesis(
 
     GenesisConfig {
         frame_system: Some(SystemConfig {
-            code: WASM_BINARY.to_vec(),
+            code: WASM_BINARY.unwrap().to_vec(),
             changes_trie_config: Default::default(),
         }),
         pallet_balances: Some(BalancesConfig {
@@ -343,7 +343,7 @@ fn parami_genesis(
 
     GenesisConfig {
         frame_system: Some(SystemConfig {
-            code: WASM_BINARY.to_vec(),
+            code: WASM_BINARY.unwrap().to_vec(),
             changes_trie_config: Default::default(),
         }),
         pallet_balances: Some(BalancesConfig {

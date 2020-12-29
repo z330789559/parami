@@ -34,12 +34,12 @@ use sp_runtime::{
 use sc_executor::{NativeExecutor, WasmExecutionMethod};
 use sc_executor::error::Result;
 
-use node_executor::Executor;
-use node_runtime::{
+use parami_node_executor::Executor;
+use parami_node_runtime::{
 	Header, Block, UncheckedExtrinsic, CheckedExtrinsic, Runtime, BuildStorage,
 	constants::currency::*,
 };
-use node_primitives::{Hash, BlockNumber};
+use parami_node_primitives::{Hash, BlockNumber};
 use node_testing::keyring::*;
 use sp_externalities::Externalities;
 
@@ -68,13 +68,13 @@ impl AppCrypto<MultiSigner, MultiSignature> for TestAuthorityId {
 /// making the binary slimmer. There is a convention to use compact version of the runtime
 /// as canonical. This is why `native_executor_instance` also uses the compact version of the
 /// runtime.
-pub const COMPACT_CODE: &[u8] = node_runtime::WASM_BINARY;
+pub const COMPACT_CODE: &[u8] = parami_node_runtime::WASM_BINARY;
 
 pub const GENESIS_HASH: [u8; 32] = [69u8; 32];
 
-pub const SPEC_VERSION: u32 = node_runtime::VERSION.spec_version;
+pub const SPEC_VERSION: u32 = parami_node_runtime::VERSION.spec_version;
 
-pub const TRANSACTION_VERSION: u32 = node_runtime::VERSION.transaction_version;
+pub const TRANSACTION_VERSION: u32 = parami_node_runtime::VERSION.transaction_version;
 
 pub type TestExternalities<H> = CoreTestExternalities<H, u64>;
 

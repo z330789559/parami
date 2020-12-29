@@ -23,12 +23,12 @@ use frame_support::{
 };
 use sp_core::NeverNativeValue;
 use sp_runtime::{FixedPointNumber, FixedI128, Perbill};
-use node_runtime::{
+use parami_node_runtime::{
 	CheckedExtrinsic, Call, Runtime, Balances, TransactionPayment,
 	TransactionByteFee,
 	constants::currency::*,
 };
-use node_primitives::Balance;
+use parami_node_primitives::Balance;
 use node_testing::keyring::*;
 
 pub mod common;
@@ -206,7 +206,7 @@ fn transaction_fee_is_correct_ultimate() {
 fn block_weight_capacity_report() {
 	// Just report how many transfer calls you could fit into a block. The number should at least
 	// be a few hundred (250 at the time of writing but can change over time). Runs until panic.
-	use node_primitives::Index;
+	use parami_node_primitives::Index;
 
 	// execution ext.
 	let mut t = new_test_ext(COMPACT_CODE, false);
@@ -273,7 +273,7 @@ fn block_length_capacity_report() {
 	// Just report how big a block can get. Executes until panic. Should be ignored unless if
 	// manually inspected. The number should at least be a few megabytes (5 at the time of
 	// writing but can change over time).
-	use node_primitives::Index;
+	use parami_node_primitives::Index;
 
 	// execution ext.
 	let mut t = new_test_ext(COMPACT_CODE, false);
