@@ -1,4 +1,7 @@
 [workspace]
+exclude = [
+	"substrate",
+]
 members = [
 	"cli",
 	"executor",

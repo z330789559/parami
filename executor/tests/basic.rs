@@ -33,12 +33,12 @@ use sp_runtime::{
 use pallet_contracts::ContractAddressFor;
 use frame_system::{self, EventRecord, Phase};
 
-use node_runtime::{
+use parami_node_runtime::{
 	Header, Block, UncheckedExtrinsic, CheckedExtrinsic, Call, Runtime, Balances,
 	System, TransactionPayment, Event, TransactionByteFee,
 	constants::currency::*,
 };
-use node_primitives::{Balance, Hash};
+use parami_node_primitives::{Balance, Hash};
 use wabt;
 use node_testing::keyring::*;
 
@@ -50,7 +50,7 @@ use self::common::{*, sign};
 /// The idea here is to pass it as the current runtime code to the executor so the executor will
 /// have to execute provided wasm code instead of the native equivalent. This trick is used to
 /// test code paths that differ between native and wasm versions.
-pub const BLOATY_CODE: &[u8] = node_runtime::WASM_BINARY_BLOATY;
+pub const BLOATY_CODE: &[u8] = parami_node_runtime::WASM_BINARY_BLOATY;
 
 /// Default transfer fee
 fn transfer_fee<E: Encode>(extrinsic: &E, fee_multiplier: FixedI128) -> Balance {
@@ -820,7 +820,7 @@ fn should_import_block_with_test_client() {
 	let mut client = TestClientBuilder::new().build();
 	let block1 = changes_trie_block();
 	let block_data = block1.0;
-	let block = node_primitives::Block::decode(&mut &block_data[..]).unwrap();
+	let block = parami_node_primitives::Block::decode(&mut &block_data[..]).unwrap();
 
 	client.import(BlockOrigin::Own, block).unwrap();
 }

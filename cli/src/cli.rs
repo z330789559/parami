@@ -35,7 +35,7 @@ pub struct Cli {
 pub enum Subcommand {
 	/// A set of base subcommands handled by `sc_cli`.
 	#[structopt(flatten)]
-	Base(sc_cli::Subcommand),
+	Key(sc_cli::KeySubcommand),
 
 	/// The custom inspect subcommmand for decoding blocks and extrinsics.
 	#[structopt(
@@ -47,4 +47,13 @@ pub enum Subcommand {
 	/// The custom benchmark subcommmand benchmarking runtime pallets.
 	#[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+
+	/// Build a chain specification.
+	BuildSpec(sc_cli::BuildSpecCmd),
+
+	/// Remove the whole chain.
+	PurgeChain(sc_cli::PurgeChainCmd),
+
+	/// Export the state of a given block into a chain spec.
+	ExportState(sc_cli::ExportStateCmd),
 }
