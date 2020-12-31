@@ -30,7 +30,7 @@
 
 #![warn(missing_docs)]
 
-use std::{sync::Arc, fmt};
+use std::sync::Arc;
 
 use parami_node_primitives::{Block, BlockNumber, AccountId, Index, Balance, Hash};
 use parami_node_runtime::UncheckedExtrinsic;

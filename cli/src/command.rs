@@ -16,10 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{chain_spec, service, Cli, Subcommand};
 use parami_node_executor::Executor;
 use parami_node_runtime::{Block, RuntimeApi};
 use sc_cli::{Result, SubstrateCli, RuntimeVersion, Role, ChainSpec};
+use sc_service::PartialComponents;
+
+use crate::{chain_spec, service, Cli, Subcommand};
+use crate::service::new_partial;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
@@ -98,8 +101,24 @@ pub fn run() -> Result<()> {
 				Ok(())
 			}
 		}
-		Some(Subcommand::Base(subcommand)) => {
+		Some(Subcommand::Key(subcommand)) => {
 			subcommand.run()
 		}
+		Some(Subcommand::BuildSpec(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+		},
+		Some(Subcommand::PurgeChain(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.database))
+		},
+		Some(Subcommand::ExportState(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.async_run(|config| {
+				let PartialComponents { client, task_manager, ..}
+					= new_partial(&config)?;
+				Ok((cmd.run(client, config.chain_spec), task_manager))
+			})
+		},
 	}
 }
