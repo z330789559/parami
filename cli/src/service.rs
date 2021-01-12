@@ -23,7 +23,7 @@
 use std::sync::Arc;
 use sc_consensus_babe;
 use grandpa::{
-	self, FinalityProofProvider as GrandpaFinalityProofProvider, StorageAndProofProvider,
+	self, FinalityProofProvider as GrandpaFinalityProofProvider,
 };
 use parami_node_executor::Executor;
 use parami_node_primitives::Block;
@@ -34,7 +34,6 @@ use sc_service::{
 	RpcHandlers, TaskManager,
 };
 use sp_inherents::InherentDataProviders;
-use sc_consensus::LongestChain;
 use sc_network::{Event, NetworkService};
 use sp_runtime::traits::Block as BlockT;
 use futures::prelude::*;

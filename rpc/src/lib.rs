@@ -33,7 +33,6 @@
 use std::sync::Arc;
 
 use parami_node_primitives::{Block, BlockNumber, AccountId, Index, Balance, Hash};
-use parami_node_runtime::UncheckedExtrinsic;
 use sp_keystore::SyncCryptoStorePtr;
 use sc_consensus_babe::{Config, Epoch};
 use sc_consensus_babe_rpc::BabeRpcHandler;
@@ -134,10 +133,10 @@ pub fn create_full<C, P, SC, B>(
 		client,
 		pool,
 		select_chain,
-		chain_spec,
 		deny_unsafe,
 		babe,
 		grandpa,
+		..
 	} = deps;
 
 	let BabeDeps {
