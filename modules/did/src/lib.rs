@@ -15,7 +15,7 @@ use sp_runtime::{
 	RuntimeDebug, DispatchResult, Permill,
 	traits::{Zero, CheckedSub, CheckedAdd, CheckedDiv, CheckedMul, Hash, SaturatedConversion,}
 };
-use frame_system::{self as system, ensure_root, ensure_signed};
+use frame_system::{ensure_root, ensure_signed};
 use sp_io::hashing::blake2_256;
 use harsh::{HarshBuilder};
 
@@ -598,7 +598,7 @@ impl<T: Trait> Module<T> {
 
 	fn generate_did(pubkey: &[u8], did_type: &[u8]) -> Vec<u8> {
 		// 通过公钥生成hash值
-		let mut hash = blake2_256(pubkey);
+		let hash = blake2_256(pubkey);
 
 		// did的类型
 		let did = did_type;
@@ -608,7 +608,7 @@ impl<T: Trait> Module<T> {
 		did.append(&mut hash[..20].to_vec());
 
 		// 将第二步生成的hash再次hash
-		let mut ext_hash = blake2_256(&did[..]);
+		let ext_hash = blake2_256(&did[..]);
 
 		// 截取第三步生成的hash的前4位，并附加到第二步生成的hash后面
 		did.append(&mut ext_hash[..4].to_vec());

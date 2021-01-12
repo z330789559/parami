@@ -6,8 +6,8 @@ use sp_std::vec::Vec;
 use frame_support::{
     decl_event, decl_module, decl_storage, decl_error,ensure,debug
 };
-use sp_runtime::{DispatchResult, traits::{Zero, CheckedSub, CheckedAdd, Hash}};
-use frame_system::{self as system, ensure_signed};
+use sp_runtime::{DispatchResult, traits::{Zero, CheckedSub, CheckedAdd}};
+use frame_system::ensure_signed;
 use array_list::ArrayList;
 
 pub trait Trait: pallet_balances::Trait + pallet_timestamp::Trait + did::Trait {
@@ -280,7 +280,7 @@ impl<T: Trait> Module<T> {
             if last_adid!=*adid{
                 let mut last_ads_metadata = Self::ads_records(last_adid);
                 last_ads_metadata.active = Some(index.clone());
-                <AdsRecords<T>>::insert(last_adid,last_ads_metadata);    
+                <AdsRecords<T>>::insert(last_adid,last_ads_metadata);
             }
             AdsActiveList::remove(&index);
             ads_metadata.active = None;
