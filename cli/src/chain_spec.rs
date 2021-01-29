@@ -264,10 +264,6 @@ pub fn testnet_genesis(
 }
 
 fn development_config_genesis() -> GenesisConfig {
-    let _root_key: AccountId = hex![
-		// 5CrRpNbQBTiBmTjpUgJ6mH9YRmopVweLsjffVz7muskYEo2r
-		"22df4b685df33f070ae6e5ee27f745de078adff099d3a803ec67afe1168acd4f"
-	].into();
     testnet_genesis(
         vec![
             authority_keys_from_seed("Alice"),
@@ -326,9 +322,7 @@ fn parami_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
 ) -> GenesisConfig {
-    let initial_allocation_json = get_initial_allocation().unwrap();
-    let initial_allocation = initial_allocation_json.0;
-    let initial_total = initial_allocation_json.1;
+    let (initial_allocation, initial_total) = get_initial_allocation().unwrap();
 
     const STASH: Balance = 10_000 * DOLLARS;
     let total_stash: Balance = 10_000 * initial_authorities.len() as u128 * DOLLARS;
@@ -426,7 +420,7 @@ fn parami_genesis(
 /// parami testnet config
 pub fn parami_testnet_config() -> ChainSpec {
     let boot_nodes = vec![
-        "/ip4/123.207.140.69/tcp/30333/p2p/12D3KooWK3veKK2VNi3oaweuSYxCsHH7oYWyPo5GTUbgSo3YNuot".parse().unwrap(),
+        "/dns4/testnet.parami.io/tcp/30333/p2p/12D3KooWHmBTEm6pPaRhZ1JuPMneNZVELWiWtvRFBJn5xngHFYpM".parse().unwrap(),
     ];
     // let boot_nodes = vec![];
     let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();

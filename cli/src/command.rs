@@ -55,9 +55,13 @@ impl SubstrateCli for Cli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		Ok(match id {
+			// single validator Alice
 			"dev" => Box::new(chain_spec::development_config()),
+			// multivalidator Alice + Bob
 			"local" => Box::new(chain_spec::local_testnet_config()),
+			// parami-testnet
 			"" | "parami" | "parami-testnet" => Box::new(chain_spec::parami_testnet_config()),
+			// TODO: parami-mainnet
 			"main" => Box::new(chain_spec::parami_mainnet_config()),
 			path => Box::new(chain_spec::ChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
