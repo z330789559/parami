@@ -1,5 +1,5 @@
+use sp_std::prelude::Box;
 use sp_std::vec::Vec;
-use sp_std::prelude::{Box};
 
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
@@ -56,22 +56,17 @@ impl Harsh {
 
             if idx + 1 < values.len() {
                 value %= (last[0] as usize + idx) as u64;
-                buffer
-                    .push(self.separators[(value % self.separators.len() as u64) as usize]);
+                buffer.push(self.separators[(value % self.separators.len() as u64) as usize]);
             }
         }
 
         if buffer.len() < self.hash_length {
-            let guard_index = (nhash as usize
-                + buffer[0] as usize)
-                % self.guards.len();
+            let guard_index = (nhash as usize + buffer[0] as usize) % self.guards.len();
             let guard = self.guards[guard_index];
             buffer.insert(0, guard);
 
             if buffer.len() < self.hash_length {
-                let guard_index = (nhash as usize
-                    + buffer[2] as usize)
-                    % self.guards.len();
+                let guard_index = (nhash as usize + buffer[2] as usize) % self.guards.len();
                 let guard = self.guards[guard_index];
                 buffer.push(guard);
             }
@@ -85,7 +80,7 @@ impl Harsh {
             }
 
             let (left, right) = _alphabet.split_at(half_length);
-            
+
             buffer = [left, &buffer[..], right].concat();
 
             let excess = buffer.len() as i32 - self.hash_length as i32;
@@ -234,7 +229,6 @@ fn create_nhash(values: &[u64]) -> u64 {
 }
 
 fn unique_alphabet(_alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>, &'static str> {
-
     match *_alphabet {
         None => {
             let mut vec = [0; 62];
@@ -392,7 +386,10 @@ mod tests {
 
         assert_eq!(
             b"laHquq",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode").as_slice()
+            harsh
+                .encode(&[1, 2, 3])
+                .expect("failed to encode")
+                .as_slice()
         );
     }
 
@@ -406,7 +403,10 @@ mod tests {
 
         assert_eq!(
             b"GlaHquq0",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode").as_slice()
+            harsh
+                .encode(&[1, 2, 3])
+                .expect("failed to encode")
+                .as_slice()
         );
     }
 
@@ -421,10 +421,13 @@ mod tests {
         let encode = harsh.encode(&[1, 2, 3]).expect("failed to encode");
         println!("encode---- is {}", sp_std::str::from_utf8(&encode).unwrap());
 
-        // 9LGlaHquq06D 
+        // 9LGlaHquq06D
         assert_eq!(
             b"1vGlaHquq0Ba",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode").as_slice()
+            harsh
+                .encode(&[1, 2, 3])
+                .expect("failed to encode")
+                .as_slice()
         );
     }
 
@@ -480,11 +483,14 @@ mod tests {
             ._alphabet("abcdefghijklmnopqrstuvwxyz")
             .init()
             .expect("failed to initialize harsh");
-        
+
         // mdfphx
         assert_eq!(
             b"lqfqhr",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode").as_slice(),
+            harsh
+                .encode(&[1, 2, 3])
+                .expect("failed to encode")
+                .as_slice(),
             "failed to encode [1, 2, 3]"
         );
     }
@@ -537,10 +543,7 @@ mod tests {
             b"AdG05N6y2rljDQak4xgzn8ZR1oKYLmJpEbVq3OBv9WwXPMe7".to_vec(),
             _alphabet.as_slice()
         );
-        assert_eq!(
-            b"UHuhtcITCsFifS",
-            separators.as_slice()
-        );
+        assert_eq!(b"UHuhtcITCsFifS", separators.as_slice());
     }
 
     #[test]
@@ -561,10 +564,7 @@ mod tests {
         );
 
         // ufabcdeghijklmnopq
-        assert_eq!(
-            b"ufabcdeghijklmnop".to_vec(),
-            separators
-        );
+        assert_eq!(b"ufabcdeghijklmnop".to_vec(), separators);
     }
 
     #[test]

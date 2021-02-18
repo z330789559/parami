@@ -1,14 +1,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-mod tests;
 mod array_list;
-use codec::{Decode, Encode};
-use sp_std::vec::Vec;
-use frame_support::{
-    decl_event, decl_module, decl_storage, decl_error,ensure,debug
-};
-use sp_runtime::{DispatchResult, traits::{Zero, CheckedSub, CheckedAdd}};
-use frame_system::ensure_signed;
+mod tests;
 use array_list::ArrayList;
+use codec::{Decode, Encode};
+use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage, ensure};
+use frame_system::ensure_signed;
+use sp_runtime::{
+    traits::{CheckedAdd, CheckedSub, Zero},
+    DispatchResult,
+};
+use sp_std::vec::Vec;
 
 pub trait Trait: pallet_balances::Trait + pallet_timestamp::Trait + did::Trait {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
@@ -33,45 +34,46 @@ pub struct AdsMetadata<Balance, Moment> {
     distribute_type: DistributeType,
 }
 
-#[derive(Encode, Decode , PartialEq, Eq, Clone, Debug)]
-pub enum DistributeType{
+#[derive(Encode, Decode, PartialEq, Eq, Clone, Debug)]
+pub enum DistributeType {
     ADVERTISER,
     AGENT,
 }
 
-impl Default for DistributeType{
-    fn default()-> Self{DistributeType::AGENT}
+impl Default for DistributeType {
+    fn default() -> Self {
+        DistributeType::AGENT
+    }
 }
 
 decl_error! {
-	pub enum Error for Module<T: Trait> {
-		/// ad does not exist
-		ADNotExists,
-		/// number overflow
-		Overflow,
-		/// dont have enough free balance
-		NotEnoughBalance,
-		/// group name is too long
-		InvalidGroupName,
-		/// you are not own the ad
-		NotOwner,
+    pub enum Error for Module<T: Trait> {
+        /// ad does not exist
+        ADNotExists,
+        /// number overflow
+        Overflow,
+        /// dont have enough free balance
+        NotEnoughBalance,
+        /// group name is too long
+        InvalidGroupName,
+        /// you are not own the ad
+        NotOwner,
         ///agent type ad need contract account signed
-		NeedAgentAccountSigned,
+        NeedAgentAccountSigned,
         /// create or deposit ad min balance
-		MineDeposit,
+        MineDeposit,
         /// ad contract did account
-		ContractDidNotExists,
+        ContractDidNotExists,
         /// ad status active
-		Active,
+        Active,
         /// ad status not active
-		NotActive,
-		///the did type is not ad
-		NotADAccount,
+        NotActive,
+        ///the did type is not ad
+        NotADAccount,
         ///withdraw balance time not reach
         TimeNotReach,
-	}
+    }
 }
-
 
 decl_storage! {
     trait Store for Module<T: Trait> as AdsModule {
@@ -103,8 +105,8 @@ decl_event! {
 }
 
 decl_module! {
-	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		fn deposit_event() = default;
+    pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+        fn deposit_event() = default;
 
         #[weight = 0]
         fn publish(origin, name: Vec<u8>, topic: Vec<u8>, total_amount: T::Balance, single_click_fee: T::Balance,display_page:Vec<u8>,landing_page:Option<Vec<u8>>,distribute_type:DistributeType) {
@@ -188,36 +190,36 @@ decl_module! {
         }
 //
         #[weight = 0]
-		fn distribute(origin,adid: AdIndex,user: T::Hash) {
-			let sender = ensure_signed(origin)?;
-			let mut ads_metadata = <AdsRecords<T>>::get(adid);
-			ensure!(ads_metadata.active.is_some(),Error::<T>::NotActive);
-			match ads_metadata.distribute_type{
-			    DistributeType::ADVERTISER=>{
+        fn distribute(origin,adid: AdIndex,user: T::Hash) {
+            let sender = ensure_signed(origin)?;
+            let mut ads_metadata = <AdsRecords<T>>::get(adid);
+            ensure!(ads_metadata.active.is_some(),Error::<T>::NotActive);
+            match ads_metadata.distribute_type{
+                DistributeType::ADVERTISER=>{
                     Self::check_ad_owner(&sender,&adid)?;
-			    },
-			    DistributeType::AGENT=>{
+                },
+                DistributeType::AGENT=>{
                     ensure!(sender == Self::contract(),Error::<T>::NeedAgentAccountSigned);
-			    }
-			}
+                }
+            }
             let value = ads_metadata.single_click_fee;
             let spend = ads_metadata.spend_amount.checked_add(&value).ok_or(Error::<T>::Overflow)?;
-			ensure!(spend <= ads_metadata.total_amount, Error::<T>::NotEnoughBalance);
+            ensure!(spend <= ads_metadata.total_amount, Error::<T>::NotEnoughBalance);
             let (contract_key, _) = <did::Module<T>>::identity(Self::contract()).ok_or(Error::<T>::ContractDidNotExists)?;
             ensure!(<did::Metadata<T>>::contains_key(user),<did::Error<T>>::DidNotExists);
             let (from_key, _) = <did::Module<T>>::identity(sender).ok_or(<did::Error<T>>::DidNotExists)?;
-			<did::Module<T>>::transfer_by_did(contract_key, user, value, "ads看广告收益".as_bytes().to_vec())?;
-			// update ads metadata
-			ads_metadata.spend_amount = spend;
-			<AdsRecords<T>>::insert(adid, ads_metadata);
-			Self::deposit_event(RawEvent::Distributed(from_key, user, value));
-		}
+            <did::Module<T>>::transfer_by_did(contract_key, user, value, "ads看广告收益".as_bytes().to_vec())?;
+            // update ads metadata
+            ads_metadata.spend_amount = spend;
+            <AdsRecords<T>>::insert(adid, ads_metadata);
+            Self::deposit_event(RawEvent::Distributed(from_key, user, value));
+        }
 //
        #[weight = 0]
-		fn update_ads(origin, adid:AdIndex,name:Option<Vec<u8>>,single_click_fee: Option<T::Balance>,display_page:Option<Vec<u8>>,landing_page:Option<Vec<u8>>) {
-			let sender = ensure_signed(origin)?;
+        fn update_ads(origin, adid:AdIndex,name:Option<Vec<u8>>,single_click_fee: Option<T::Balance>,display_page:Option<Vec<u8>>,landing_page:Option<Vec<u8>>) {
+            let sender = ensure_signed(origin)?;
             Self::check_ad_owner(&sender,&adid)?;
-			// update ads records
+            // update ads records
             let mut ads_metadata = Self::ads_records(adid);
             if name.is_some(){
                 ads_metadata.advertiser = name.unwrap();
@@ -231,69 +233,87 @@ decl_module! {
             if landing_page.is_some(){
                 ads_metadata.landing_page = landing_page;
             }
-			<AdsRecords<T>>::insert(adid, ads_metadata);
-			Self::deposit_event(RawEvent::AdsUpdated(adid));
-		}
-	}
+            <AdsRecords<T>>::insert(adid, ads_metadata);
+            Self::deposit_event(RawEvent::AdsUpdated(adid));
+        }
+    }
 }
 impl<T: Trait> Module<T> {
-
-    fn check_ad_owner(sender: &T::AccountId,adid:&AdIndex) ->DispatchResult{
-        let (from_key, _) = <did::Module<T>>::identity(sender).ok_or(<did::Error<T>>::DidNotExists)?;
+    fn check_ad_owner(sender: &T::AccountId, adid: &AdIndex) -> DispatchResult {
+        let (from_key, _) =
+            <did::Module<T>>::identity(sender).ok_or(<did::Error<T>>::DidNotExists)?;
         ensure!(<AdsRecords<T>>::contains_key(adid), Error::<T>::ADNotExists);
-        ensure!(<AdsOwner<T>>::get(adid) == from_key,Error::<T>::NotOwner);
+        ensure!(<AdsOwner<T>>::get(adid) == from_key, Error::<T>::NotOwner);
         Ok(())
     }
 
-    fn create_ad(user_key: T::Hash, adid: &AdIndex, ad: AdsMetadata<T::Balance, T::Moment>) -> DispatchResult {
+    fn create_ad(
+        user_key: T::Hash,
+        adid: &AdIndex,
+        ad: AdsMetadata<T::Balance, T::Moment>,
+    ) -> DispatchResult {
         <AdsRecords<T>>::insert(adid, ad);
         <AdsOwner<T>>::insert(adid, &user_key);
-//        <OwnedAdList<T>>::append(&user_key, adid.clone());
+        //        <OwnedAdList<T>>::append(&user_key, adid.clone());
         let mut ads = Self::owned_ads(user_key);
         ads.push(adid.clone());
-        let new_count = Self::all_ads_count().checked_add(1)
+        let new_count = Self::all_ads_count()
+            .checked_add(1)
             .ok_or(Error::<T>::Overflow)?;
         AllAdsCount::put(new_count);
-        <OwnedAds<T>>::insert(user_key,ads);
+        <OwnedAds<T>>::insert(user_key, ads);
         Ok(())
     }
 
     fn active_ad(adid: &AdIndex) -> DispatchResult {
         let mut ads_metadata = Self::ads_records(adid);
-        debug::info!("{:?}",ads_metadata.advertiser);
-        ensure!(ads_metadata.active.is_none(),Error::<T>::Active);
+        debug::info!("{:?}", ads_metadata.advertiser);
+        ensure!(ads_metadata.active.is_none(), Error::<T>::Active);
         AdsActiveList::add(adid);
-        ads_metadata.active = Some(AdsActiveList::size().checked_sub(1).ok_or(Error::<T>::Overflow)?);
+        ads_metadata.active = Some(
+            AdsActiveList::size()
+                .checked_sub(1)
+                .ok_or(Error::<T>::Overflow)?,
+        );
         <AdsRecords<T>>::insert(adid, ads_metadata);
         Ok(())
     }
 
     fn pause_ad(adid: &AdIndex) -> DispatchResult {
-        ensure!(<AdsRecords<T>>::contains_key(adid),<did::Error<T>>::DidNotExists);
+        ensure!(
+            <AdsRecords<T>>::contains_key(adid),
+            <did::Error<T>>::DidNotExists
+        );
         let mut ads_metadata = Self::ads_records(adid);
-        debug::info!("{:?}",ads_metadata.advertiser);
-        ensure!(ads_metadata.active.is_some(),Error::<T>::NotActive);
+        debug::info!("{:?}", ads_metadata.advertiser);
+        ensure!(ads_metadata.active.is_some(), Error::<T>::NotActive);
         let index = ads_metadata.active.unwrap();
         //get last active ad index
-        let last_index = AdsActiveList::size().checked_sub(1).ok_or(Error::<T>::Overflow)?;
-        if let Some(last_adid) = AdsActiveList::get(&last_index){
-            if last_adid!=*adid{
+        let last_index = AdsActiveList::size()
+            .checked_sub(1)
+            .ok_or(Error::<T>::Overflow)?;
+        if let Some(last_adid) = AdsActiveList::get(&last_index) {
+            if last_adid != *adid {
                 let mut last_ads_metadata = Self::ads_records(last_adid);
                 last_ads_metadata.active = Some(index.clone());
-                <AdsRecords<T>>::insert(last_adid,last_ads_metadata);
+                <AdsRecords<T>>::insert(last_adid, last_ads_metadata);
             }
             AdsActiveList::remove(&index);
             ads_metadata.active = None;
-            <AdsRecords<T>>::insert(adid,ads_metadata);
+            <AdsRecords<T>>::insert(adid, ads_metadata);
         }
 
         Ok(())
     }
 
     fn is_sub(mut haystack: &[u8], needle: &[u8]) -> bool {
-        if needle.len() == 0 { return true; }
+        if needle.len() == 0 {
+            return true;
+        }
         while !haystack.is_empty() {
-            if haystack.starts_with(needle) { return true; }
+            if haystack.starts_with(needle) {
+                return true;
+            }
             haystack = &haystack[1..];
         }
         false
