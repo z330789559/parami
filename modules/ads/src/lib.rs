@@ -11,8 +11,8 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 
-pub trait Trait: pallet_balances::Trait + pallet_timestamp::Trait + did::Trait {
-    type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+pub trait Trait: pallet_balances::Config + pallet_timestamp::Config + did::Trait {
+    type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
 
 pub type AdIndex = u64;
@@ -91,8 +91,8 @@ decl_storage! {
 decl_event! {
   pub enum Event<T>
   where
-    <T as frame_system::Trait>::Hash,
-    <T as pallet_balances::Trait>::Balance,
+    <T as frame_system::Config>::Hash,
+    <T as pallet_balances::Config>::Balance,
     {
         Published(Hash, Hash, Balance),
         Deposited(Hash, AdIndex ,  Balance),
