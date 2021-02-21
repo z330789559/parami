@@ -85,7 +85,7 @@ pub fn run() -> Result<()> {
                 match config.role {
                     Role::Light => service::new_light(config),
                     _ => service::new_full(config),
-                }
+                }.map_err(sc_cli::Error::Service)
             })
         }
         Some(Subcommand::Inspect(cmd)) => {
@@ -106,7 +106,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
         }
-        Some(Subcommand::Key(subcommand)) => subcommand.run(),
+        Some(Subcommand::Key(subcommand)) => subcommand.run(&cli),
         Some(Subcommand::BuildSpec(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
