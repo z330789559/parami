@@ -19,8 +19,8 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 
-pub trait Trait: pallet_balances::Trait + pallet_timestamp::Trait {
-    type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+pub trait Trait: pallet_balances::Config + pallet_timestamp::Config {
+    type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
 
 pub type Did = Vec<u8>;
@@ -137,9 +137,9 @@ decl_storage! {
 decl_event! {
   pub enum Event<T>
   where
-    <T as frame_system::Trait>::AccountId,
-    <T as pallet_balances::Trait>::Balance,
-    <T as pallet_timestamp::Trait>::Moment,
+    <T as frame_system::Config>::AccountId,
+    <T as pallet_balances::Config>::Balance,
+    <T as pallet_timestamp::Config>::Moment,
     {
             Created(Did, Vec<u8>, Did),
             Updated(Did, AccountId, Balance),
@@ -319,7 +319,7 @@ decl_module! {
             if metadata.donate.is_none() {
                 ensure!(value >= Self::min_deposit(), Error::<T>::LockNotFulfilled);
 
-                let mut rebate = value.checked_div(&2.into()).ok_or(Error::<T>::Overflow)?;
+                let mut rebate = value.checked_div(&2_u32.into()).ok_or(Error::<T>::Overflow)?;
                 if rebate > Self::fee_to_previous() {
                     rebate = Self::fee_to_previous();
                 }
@@ -352,11 +352,11 @@ decl_module! {
                 } else { // keeping rebate
                     let lack = Self::fee_to_previous()
                         .checked_sub(&donate)
-                        .and_then(|n| n.checked_mul(&2.into()))
+                        .and_then(|n| n.checked_mul(&2_u32.into()))
                         .ok_or(Error::<T>::Overflow)?;
-                    let mut rebate = lack / 2.into();
+                    let mut rebate = lack / 2_u32.into();
                     if new_locked_funds < lack {
-                        rebate = new_locked_funds / 2.into();
+                        rebate = new_locked_funds / 2_u32.into();
                     }
 
                     new_locked_funds = new_locked_funds.checked_sub(&rebate).ok_or(Error::<T>::Overflow)?;
