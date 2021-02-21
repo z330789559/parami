@@ -79,6 +79,7 @@ sc-tracing = { version = "3.0.0", path = "../substrate/client/tracing" }
 sc-telemetry = { version = "3.0.0", path = "../substrate/client/telemetry" }
 sc-authority-discovery = { version = "0.9.0", path = "../substrate/client/authority-discovery" }
 
+sc-finality-grandpa-warp-sync = { version = "0.8.0", path = "../substrate/client/finality-grandpa-warp-sync" }
 # frame dependencies
 pallet-indices = { version = "3.0.0", path = "../substrate/frame/indices" }
 pallet-timestamp = { version = "3.0.0", default-features = false, path = "../substrate/frame/timestamp" }
