@@ -2,6 +2,9 @@
 
 A Parami Substrate node, ready for hacking.
 
+after clone from git
+[1] git submodule init, git submodule update
+
 # Building
 
 Install Rust:
@@ -9,6 +12,8 @@ Install Rust:
 ```bash
 curl https://sh.rustup.rs -sSf | sh
 ```
+change install setting
+[default toolchain: stable (default)] -> nightly.
 
 Install required tools:
 
