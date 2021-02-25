@@ -51,7 +51,7 @@ const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 const PRA_PROPERTIES: &str = r#"
 		{
 			"tokenDecimals": 15,
-			"tokenSymbol": "PRM"
+			"tokenSymbol": "AD3"
 		}"#;
 
 #[derive(Serialize, Deserialize)]
@@ -265,7 +265,7 @@ pub fn testnet_genesis(
         pallet_treasury: Some(Default::default()),
         did: Some(DidConfig {
             genesis_account: hex![
-                "22df4b685df33f070ae6e5ee27f745de078adff099d3a803ec67afe1168acd4f"
+                "ca1e9ed7dd88da8d4894df1b8bfda932030da19638c89967e7263cfb29a14131"
             ]
             .into(),
             min_deposit: 10 * DOLLARS,
@@ -273,7 +273,7 @@ pub fn testnet_genesis(
             fee_to_previous: 25 * DOLLARS,
         }),
         ads: Some(AdsConfig {
-            contract: hex!["0c98c49f1861d5f6ed9ea27230796a76878abbfbfb9716c64b2c7479a2197435"]
+            contract: hex!["16d3ed9daeb8e8126a33843cbf1e1c09eb598413349fd4474d4b48ded3e1340b"]
                 .into(),
             min_deposit: 500 * DOLLARS,
         }),
@@ -431,7 +431,7 @@ fn parami_genesis(
         pallet_treasury: Some(Default::default()),
         did: Some(DidConfig {
             genesis_account: hex![
-                "22df4b685df33f070ae6e5ee27f745de078adff099d3a803ec67afe1168acd4f"
+                "ca1e9ed7dd88da8d4894df1b8bfda932030da19638c89967e7263cfb29a14131"
             ]
             .into(),
             min_deposit: 10 * DOLLARS,
@@ -439,7 +439,7 @@ fn parami_genesis(
             fee_to_previous: 25 * DOLLARS,
         }),
         ads: Some(AdsConfig {
-            contract: hex!["22df4b685df33f070ae6e5ee27f745de078adff099d3a803ec67afe1168acd4f"]
+            contract: hex!["16d3ed9daeb8e8126a33843cbf1e1c09eb598413349fd4474d4b48ded3e1340b"]
                 .into(),
             min_deposit: 100 * DOLLARS,
         }),

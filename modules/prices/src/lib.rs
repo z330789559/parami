@@ -55,14 +55,14 @@ pub const FETCHED_JOBS: [(&[u8], &[u8], &[u8]); 4] = [
 		b"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD",
 	),
 	(
-		b"PRM",
+		b"AD3",
 		b"coinmarketcap",
 		b"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=2275",
 	),
 	(
-		b"PRM",
+		b"AD3",
 		b"coingecko",
-		b"https://api.coingecko.com/api/v3/simple/price?ids=prochain&vs_currencies=usd",
+		b"https://api.coingecko.com/api/v3/simple/price?ids=ad3&vs_currencies=usd",
 	),
 ];
 

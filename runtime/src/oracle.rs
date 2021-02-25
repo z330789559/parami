@@ -130,7 +130,7 @@ pub enum HTLCChain {
 	/// Ethereum Mainnet
 	ETHMain,
 	/// Parami
-	PRM,
+	AD3,
 }
 
 #[derive(Encode, Decode, PartialEq, Eq, Clone, Debug)]
@@ -167,7 +167,7 @@ decl_error! {
 
 decl_storage! {
 	trait Store for Module<T: Trait> as OracleSwap {
-		/// Stores the locked prm tokens
+		/// Stores the locked ad3 tokens
 		pub PraTokenAddr get(fn pra_token_addr): Option<T::AccountId>;
 
 		/// The current set of keys that may call update
