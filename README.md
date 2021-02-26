@@ -2,6 +2,8 @@
 
 A Parami Substrate node, ready for hacking.
 
+[Testnet Polkadot-js APPS UI](https://apps.parami.io/)
+
 ## Building
 
 Install Rust:
@@ -54,7 +56,7 @@ To start up the Parami node, run:
 
 ## Settings
 
-1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: [ws://apps.parami.io/v2/ws](ws://apps.parami.io/v2/ws)
+1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: `ws://apps.parami.io/v2/ws`
 
 2) Go to *Settings*, open *Developer* tab. Insert in textbox description of types (copy&paste from here) and Save it.
 
@@ -184,15 +186,18 @@ You can also choose where your validator rewards are deposited (to the stash or 
 Sign and send the transaction
 
 ### Set your session keys, using rotateKeys
+
 Click on Set Session Keys on the stake you just created above.
 
 Go to the command line where your validator is running (e.g. SSH into the server, etc.) and enter this command. It will tell your validator to generate a new set of session keys:
-```
+
+```bash
 curl -H 'Content-Type: application/json' --data '{ "jsonrpc":"2.0", "method":"author_rotateKeys", "id":1 }' localhost:9933
 ```
 
 The output should look like this:
-```
+
+```json
 {"jsonrpc":"2.0","result":"0x0ca0fbf245e4abca3328f8bba4a286d6cb1796516fcc68864cab580f175e6abd2b9107003014fc6baab7fd8caf4607b34222df62f606248a8a592bcba86ff9eec6e838ae8eb757eb77dffc748f1443e60c4f7617c9ea7905f0dd09ab758a8063","id":1}
 ```
 
@@ -201,6 +206,7 @@ Copy the hexadecimal key from inside the JSON object, and paste it into the web 
 Sign and send the transaction.
 
 ### Start validating
+
 You should now see a Validate button on the stake. Click on it, and enter the commission you would like to charge as a validator. Sign and send the transaction.
 
 You should now be able to see your validator in the Next up section of the staking tab.
