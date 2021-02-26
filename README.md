@@ -2,20 +2,30 @@
 
 A Parami Substrate node, ready for hacking.
 
-after clone from git
-[1] git submodule init, git submodule update
-
-# Building
+## Building
 
 Install Rust:
 
 ```bash
 curl https://sh.rustup.rs -sSf | sh
 ```
-change install setting
-[default toolchain: stable (default)] -> nightly.
 
-Install required tools:
+NOTE: change install setting [default toolchain: stable (default)] -> nightly.
+
+```bash
+rustup default nightly
+```
+
+Clone Code:
+
+```bash
+git clone https://github.com/parami-protocol/parami.git
+git parami
+git submodule init
+git submodule update
+```
+
+Install required rust target(wasm32):
 
 ```bash
 .maintain/init.sh
@@ -23,31 +33,30 @@ Install required tools:
 
 Build Parami:
 
-```
+```bash
 cargo build --release
 ```
 
 Ensure you have a fresh start if updating from another version:
-```
+
+```bash
 ./target/release/parami purge-chain
 ```
 
 To start up the Parami node, run:
-```
+
+```bash
 ./target/release/parami \
-  --chain ./testnet/v1.0.0.raw.json \
+  --chain resources/dana.v2.json \
   --name NodeName \
-  --telemetry-url "ws://telemetry.polkadot.io:1024 9" \
-  --bootnodes /ip4/39.106.220.238/tcp/30333/p2p/QmXigZJExTmAaXcRfX5gXobei1PDsmhGKuKH98GGciz5qW \
   --validator
 ```
 
-# Settings
+## Settings
 
-1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: [wss://substrate.chain.pro/v2/ws](wss://substrate.chain.pro/v2/ws)
+1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: [ws://apps.parami.io/v2/ws](ws://apps.parami.io/v2/ws)
 
 2) Go to *Settings*, open *Developer* tab. Insert in textbox description of types (copy&paste from here) and Save it.
-
 
 ```json
 {
@@ -148,7 +157,9 @@ To start up the Parami node, run:
     }
 }
 ```
-# Validating on Parami
+
+## Validating on Parami
+
 Welcome to the official, in-depth Parami guide to validating. We're happy that you're interested in validating on Parami and we'll do our best to provide in-depth documentation on the process below.
 
 This document contains all the information one should need to start validating on Parami using the polkadot-js/apps user interface. We will start with how to setup one's node and proceed to how to key management. To start, we will use the following terminology of keys for the guide:
@@ -157,12 +168,13 @@ This document contains all the information one should need to start validating o
 * controller - the controller is the keypair that will control your validator settings. It should have a smaller balance, e.g. 10-100 PRM
 * session - the 4 session keypairs are hot keys that are stored on your validator node. They do not need to have balances.
 
-## Requirements
+### Requirements
+
 1. You should have balances in your stash (ed25519 or sr25519) and controller (ed25519 or sr25519) accounts.
 2. You will need to additionally add the --validator flag to run a validator node.
 3. You should have a wallet, such as the polkadot-js extension, installed in your browser with the stash and controller keypairs. If you don't have it, get it [here](https://github.com/polkadot-js/extension) .
 
-## Create a stake
+### Create a stake
 Go to the Staking tab, and select Account actions at the top. Click on New stake.
 
 Select your controller and stash accounts. Enter how much of your stash balance you would like to stake. Leave a few PRM free, or you will be unable to send transactions from the account.
@@ -171,7 +183,7 @@ You can also choose where your validator rewards are deposited (to the stash or 
 
 Sign and send the transaction
 
-## Set your session keys, using rotateKeys
+### Set your session keys, using rotateKeys
 Click on Set Session Keys on the stake you just created above.
 
 Go to the command line where your validator is running (e.g. SSH into the server, etc.) and enter this command. It will tell your validator to generate a new set of session keys:
@@ -188,7 +200,7 @@ Copy the hexadecimal key from inside the JSON object, and paste it into the web 
 
 Sign and send the transaction.
 
-## Start validating
+### Start validating
 You should now see a Validate button on the stake. Click on it, and enter the commission you would like to charge as a validator. Sign and send the transaction.
 
 You should now be able to see your validator in the Next up section of the staking tab.
@@ -201,12 +213,12 @@ Is your validator not producing blocks?
 * Check that it is running with the --validator flag.
 * Ensure your session keys are set correctly. Use curl to rotate your session keys again, and then send another transaction to the network to set the new keys.
 
-## Stop validating
+### Stop validating
 If you would like to stop validating, you should use the Stop Validating button on your stake, to send a chill transaction. It will take effect when the next validator rotation happens, at which point you can shut down your validator.
 
 Once you have stopped validating, you can send a transaction to unbond your funds. You can then redeem your unbonded funds after the unbonding period has passed.
 
-# Development
+## Development
 
 You can start a development chain with:
 
