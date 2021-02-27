@@ -62,6 +62,8 @@ To start up the Parami node, run:
 
 ```json
 {
+    "Address": "MultiAddress",
+    "LookupSource": "MultiAddress",
     "Did":"Vec<u8>",
     "ExternalAddress":{
         "btc":"Vec<u8>",
