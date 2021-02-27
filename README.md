@@ -45,7 +45,13 @@ Ensure you have a fresh start if updating from another version:
 ./target/release/parami purge-chain
 ```
 
-To start up the Parami node, run:
+To start a Parami node, run:
+
+```bash
+./target/release/parami --chain resources/dana.v2.json
+```
+
+To start the Parami validater node, run:
 
 ```bash
 ./target/release/parami \
