@@ -22,7 +22,7 @@ Clone Code:
 
 ```bash
 git clone https://github.com/parami-protocol/parami.git
-git parami
+cd parami
 git submodule init
 git submodule update
 ```
