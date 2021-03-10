@@ -57,7 +57,9 @@ To start the Parami validater node, run:
 ./target/release/parami \
   --chain resources/dana.v2.json \
   --name NodeName \
-  --validator
+  --validator \
+  --node-key ..... \
+  --keystore-path /path/to/auth
 ```
 
 ## Settings
