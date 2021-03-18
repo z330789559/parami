@@ -1,16 +1,14 @@
 cargo-features = ["resolver"]
 
 [workspace]
-exclude = [
-	"substrate",
-]
+exclude = ["substrate"]
 members = [
 	"cli",
 	"executor",
 	"primitives",
 	"rpc",
-	"modules/did",
-	"modules/ads",
+	"pallets/did",
+	"pallets/ads",
 	"runtime",
 ]
 
