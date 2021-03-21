@@ -11,7 +11,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 
-pub trait Trait: pallet_balances::Config + pallet_timestamp::Config + did::Trait {
+pub trait Config: pallet_balances::Config + pallet_timestamp::Config + did::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
 
@@ -47,7 +47,7 @@ impl Default for DistributeType {
 }
 
 decl_error! {
-    pub enum Error for Module<T: Trait> {
+    pub enum Error for Module<T: Config> {
         /// ad does not exist
         ADNotExists,
         /// number overflow
@@ -76,7 +76,7 @@ decl_error! {
 }
 
 decl_storage! {
-    trait Store for Module<T: Trait> as AdsModule {
+    trait Store for Module<T: Config> as AdsModule {
         pub Contract get(fn contract) config(): T::AccountId;
         pub MinDeposit get(fn min_deposit) config(): T::Balance;
         pub AdsRecords get(fn ads_records): map hasher(twox_64_concat) AdIndex => AdsMetadata<T::Balance, T::Moment>;
@@ -105,7 +105,7 @@ decl_event! {
 }
 
 decl_module! {
-    pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+    pub struct Module<T: Config> for enum Call where origin: T::Origin {
         fn deposit_event() = default;
 
         #[weight = 0]
@@ -238,7 +238,7 @@ decl_module! {
         }
     }
 }
-impl<T: Trait> Module<T> {
+impl<T: Config> Module<T> {
     fn check_ad_owner(sender: &T::AccountId, adid: &AdIndex) -> DispatchResult {
         let (from_key, _) =
             <did::Module<T>>::identity(sender).ok_or(<did::Error<T>>::DidNotExists)?;

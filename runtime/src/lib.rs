@@ -869,7 +869,11 @@ parameter_types! {
     pub const ChallengePeriod: BlockNumber = 7 * DAYS;
 }
 
-impl did::Trait for Runtime {
+impl did::Config for Runtime {
+    type Event = Event;
+}
+
+impl ads::Config for Runtime {
     type Event = Event;
 }
 
@@ -882,10 +886,6 @@ impl did::Trait for Runtime {
 // 	type Event = Event;
 // 	type Call = Call;
 // }
-
-impl ads::Trait for Runtime {
-    type Event = Event;
-}
 
 construct_runtime!(
     pub enum Runtime where

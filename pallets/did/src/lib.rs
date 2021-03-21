@@ -19,7 +19,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 
-pub trait Trait: pallet_balances::Config + pallet_timestamp::Config {
+pub trait Config: pallet_balances::Config + pallet_timestamp::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
 
@@ -78,7 +78,7 @@ pub struct OldMetadataRecord<AccountId, Hash, Balance, Moment> {
 }
 
 decl_error! {
-    pub enum Error for Module<T: Trait> {
+    pub enum Error for Module<T: Config> {
         /// invlid type
         InvalidType,
         /// did does not exist
@@ -117,7 +117,7 @@ decl_error! {
 }
 
 decl_storage! {
-    trait Store for Module<T: Trait> as DidModule {
+    trait Store for Module<T: Config> as DidModule {
         pub GenesisAccount get(fn genesis_account) config(): T::AccountId;
         pub BaseQuota get(fn base_quota) config(): u64;
         pub MinDeposit get(fn min_deposit) config(): T::Balance;
@@ -152,7 +152,7 @@ decl_event! {
 }
 
 decl_module! {
-    pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+    pub struct Module<T: Config> for enum Call where origin: T::Origin {
         type Error = Error<T>;
 
         fn deposit_event() = default;
@@ -535,7 +535,7 @@ decl_module! {
     }
 }
 
-impl<T: Trait> Module<T> {
+impl<T: Config> Module<T> {
     fn migrate() {
         use frame_support::{migration::StorageKeyIterator, Twox64Concat};
         for (
@@ -624,7 +624,7 @@ impl<T: Trait> Module<T> {
     }
 }
 
-impl<T: Trait> Module<T> {
+impl<T: Config> Module<T> {
     pub fn transfer_by_did(
         from_user: T::Hash,
         to_user: T::Hash,
