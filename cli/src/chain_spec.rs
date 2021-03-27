@@ -174,15 +174,12 @@ pub fn testnet_genesis(
             get_account_id_from_seed::<sr25519::Public>("Dave"),
             get_account_id_from_seed::<sr25519::Public>("Eve"),
             get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-            get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+            // get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
             get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
             get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
             get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
             get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
             get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-            // hex!["22df4b685df33f070ae6e5ee27f745de078adff099d3a803ec67afe1168acd4f"].into(),
-            // hex!["0c98c49f1861d5f6ed9ea27230796a76878abbfbfb9716c64b2c7479a2197435"].into(),
-            // hex!["74a27632efacf7bbc58a2e9f8d27a46a9f3de7d17bbd9b69da5d26b5f4b84133"].into(),
         ]
     });
 
@@ -264,10 +261,7 @@ pub fn testnet_genesis(
         pallet_membership_Instance1: Some(Default::default()),
         pallet_treasury: Some(Default::default()),
         did: Some(DidConfig {
-            genesis_account: hex![
-                "ca1e9ed7dd88da8d4894df1b8bfda932030da19638c89967e7263cfb29a14131"
-            ]
-            .into(),
+            genesis_account: get_account_id_from_seed::<sr25519::Public>("Alice").into(),
             min_deposit: 10 * DOLLARS,
             base_quota: 250,
             fee_to_previous: 25 * DOLLARS,
