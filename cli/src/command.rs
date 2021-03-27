@@ -20,9 +20,11 @@ use parami_node_executor::Executor;
 use parami_node_runtime::{Block, RuntimeApi};
 use sc_cli::{ChainSpec, Result, Role, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
+use sp_runtime::traits::{Block as BlockT, Hash as HashT, Header as HeaderT, Zero};
 
 use crate::service::new_partial;
 use crate::{chain_spec, service, Cli, Subcommand};
+use sp_core::hexdisplay::HexDisplay;
 
 impl SubstrateCli for Cli {
     fn impl_name() -> String {
@@ -116,6 +118,30 @@ pub fn run() -> Result<()> {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.database))
         }
+        Some(Subcommand::ExportGenesisState(params)) => {
+            let mut builder = sc_cli::LoggerBuilder::new("");
+            builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
+            let _ = builder.init();
+
+            let block: Block = generate_genesis_block(&load_spec(
+                &params.chain.clone().unwrap_or_default(),
+                params.parachain_id.into(),
+            )?)?;
+            let raw_header = block.header().encode();
+            let output_buf = if params.raw {
+                raw_header
+            } else {
+                format!("0x{:?}", HexDisplay::from(&block.header().encode())).into_bytes()
+            };
+
+            if let Some(output) = &params.output {
+                std::fs::write(output, output_buf)?;
+            } else {
+                std::io::stdout().write_all(&output_buf)?;
+            }
+
+            Ok(())
+        }
         Some(Subcommand::ExportState(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.async_run(|config| {
@@ -129,3 +155,52 @@ pub fn run() -> Result<()> {
         }
     }
 }
+
+fn load_spec(
+    id: &str,
+    para_id: u32,
+) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+    match id {
+        "tick" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(
+            &include_bytes!("../res/tick.json")[..],
+        )?)),
+        "trick" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(
+            &include_bytes!("../res/trick.json")[..],
+        )?)),
+        "track" => Ok(Box::new(chain_spec::ChainSpec::from_json_bytes(
+            &include_bytes!("../res/track.json")[..],
+        )?)),
+    }
+}
+
+/// Generate the genesis block from a given ChainSpec.
+pub fn generate_genesis_block<Block: BlockT>(
+    chain_spec: &Box<dyn ChainSpec>,
+) -> std::result::Result<Block, String> {
+    let storage = chain_spec.build_storage()?;
+
+    let child_roots = storage.children_default.iter().map(|(sk, child_content)| {
+        let state_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(
+            child_content.data.clone().into_iter().collect(),
+        );
+        (sk.clone(), state_root.encode())
+    });
+    let state_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(
+        storage.top.clone().into_iter().chain(child_roots).collect(),
+    );
+
+    let extrinsics_root =
+        <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(Vec::new());
+
+    Ok(Block::new(
+        <<Block as BlockT>::Header as HeaderT>::new(
+            Zero::zero(),
+            extrinsics_root,
+            state_root,
+            Default::default(),
+            Default::default(),
+        ),
+        Default::default(),
+    ))
+}
+

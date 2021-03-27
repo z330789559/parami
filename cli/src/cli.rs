@@ -18,6 +18,7 @@
 
 use sc_cli::RunCmd;
 use structopt::StructOpt;
+use std::path::PathBuf;
 
 /// An overarching CLI command definition.
 #[derive(Debug, StructOpt)]
@@ -33,6 +34,10 @@ pub struct Cli {
 /// Possible subcommands of the main binary.
 #[derive(Debug, StructOpt)]
 pub enum Subcommand {
+    /// Export the genesis state of the parachain.
+    #[structopt(name = "export-genesis-state")]
+    ExportGenesisState(ExportGenesisStateCommand),
+
     /// A set of base subcommands handled by `sc_cli`.
     #[structopt(flatten)]
     Key(sc_cli::KeySubcommand),
@@ -56,4 +61,24 @@ pub enum Subcommand {
 
     /// Export the state of a given block into a chain spec.
     ExportState(sc_cli::ExportStateCmd),
+}
+
+/// Command for exporting the genesis state of the parachain
+#[derive(Debug, StructOpt)]
+pub struct ExportGenesisStateCommand {
+    /// Output file name or stdout if unspecified.
+    #[structopt(parse(from_os_str))]
+    pub output: Option<PathBuf>,
+
+    /// Id of the parachain this state is for.
+    #[structopt(long, default_value = "100")]
+    pub parachain_id: u32,
+
+    /// Write output in binary. Default is to write in hex.
+    #[structopt(short, long)]
+    pub raw: bool,
+
+    /// The name of the chain for that the genesis state should be exported.
+    #[structopt(long)]
+    pub chain: Option<String>,
 }
