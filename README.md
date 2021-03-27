@@ -62,6 +62,12 @@ To start the Parami validater node, run:
   --keystore-path /path/to/auth
 ```
 
+To start a local dev node, run:
+
+```bash
+cargo run --release -- --dev --alice --tmp
+```
+
 ## Settings
 
 1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: `ws://apps.parami.io/v2/ws`
