@@ -44,7 +44,7 @@ jsonrpc-core = "15.1.0"
 log = "0.4.8"
 rand = "0.7.2"
 structopt = { version = "0.3.8", optional = true }
-tracing = "0.1.10"
+tracing = "0.1.25"
 hex = "0.4.0"
 parking_lot = "0.10.0"
 
@@ -60,6 +60,8 @@ sp-keyring = { version = "3.0.0", path = "../substrate/primitives/keyring" }
 sp-io = { version = "3.0.0", path = "../substrate/primitives/io" }
 sp-consensus = { version = "0.9.0", path = "../substrate/primitives/consensus/common" }
 sp-transaction-pool = { version = "3.0.0", path = "../substrate/primitives/transaction-pool" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "master" }
+#polkadot-parachain = { path = "../parachain" }
 
 # client dependencies
 sc-client-api = { version = "3.0.0", path = "../substrate/client/api" }
