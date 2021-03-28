@@ -152,7 +152,13 @@ fn get_initial_allocation() -> Result<(Vec<(AccountId, Balance)>, Balance), Stri
     Ok((balances, total))
 }
 
-/// Helper function to create GenesisConfig for testing
+/// Helper function to create GenesisConfig for testing.
+///
+/// Configuration:
+/// - Alice to Ferdie
+/// - Alice to Ferdie //stash
+/// - Alice as root_key
+/// - Alice as did genesis
 pub fn testnet_genesis(
     initial_authorities: Vec<(
         AccountId,
@@ -166,7 +172,7 @@ pub fn testnet_genesis(
     endowed_accounts: Option<Vec<AccountId>>,
     enable_println: bool,
 ) -> GenesisConfig {
-    let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
+    let mut endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
         vec![
             get_account_id_from_seed::<sr25519::Public>("Alice"),
             get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -174,7 +180,7 @@ pub fn testnet_genesis(
             get_account_id_from_seed::<sr25519::Public>("Dave"),
             get_account_id_from_seed::<sr25519::Public>("Eve"),
             get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-            // get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+            get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
             get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
             get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
             get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
@@ -185,8 +191,15 @@ pub fn testnet_genesis(
 
     let num_endowed_accounts = endowed_accounts.len();
 
-    const ENDOWMENT: Balance = 70_000_000 * DOLLARS;
-    const STASH: Balance = 100_000 * DOLLARS;
+    for x in &initial_authorities {
+        if !endowed_accounts.contains(&x.0) {
+            endowed_accounts.push(x.0.clone());
+        }
+    }
+
+    // NOTE: total Amount is 100M.
+    let endowment_amount: Balance = (100_000_000 / num_endowed_accounts as u128 + 1) * DOLLARS;
+    let stash_amount: Balance = endowment_amount;
 
     GenesisConfig {
         frame_system: Some(SystemConfig {
@@ -197,8 +210,7 @@ pub fn testnet_genesis(
             balances: endowed_accounts
                 .iter()
                 .cloned()
-                .map(|k| (k, ENDOWMENT))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+                .map(|k| (k, endowment_amount))
                 .collect(),
         }),
         pallet_indices: Some(IndicesConfig { indices: vec![] }),
@@ -219,7 +231,14 @@ pub fn testnet_genesis(
             minimum_validator_count: initial_authorities.len() as u32,
             stakers: initial_authorities
                 .iter()
-                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.1.clone(),
+                        stash_amount,
+                        StakerStatus::Validator,
+                    )
+                })
                 .collect(),
             invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
             slash_reward_fraction: Perbill::from_percent(10),
@@ -231,7 +250,7 @@ pub fn testnet_genesis(
                 .iter()
                 .take((num_endowed_accounts + 1) / 2)
                 .cloned()
-                .map(|member| (member, STASH))
+                .map(|member| (member, stash_amount))
                 .collect(),
         }),
         pallet_collective_Instance1: Some(CouncilConfig::default()),
@@ -340,7 +359,7 @@ fn parami_genesis(
 ) -> GenesisConfig {
     let (initial_allocation, initial_total) = get_initial_allocation().unwrap();
 
-    const STASH: Balance = 10_000 * DOLLARS;
+    const stash_amount: Balance = 10_000 * DOLLARS;
     let total_stash: Balance = 10_000 * initial_authorities.len() as u128 * DOLLARS;
     let endowed_amount: Balance = 70_000_000 * DOLLARS - initial_total - total_stash;
 
@@ -356,7 +375,11 @@ fn parami_genesis(
                 .iter()
                 .cloned()
                 .map(|k| (k, endowed_amount))
-                .chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+                .chain(
+                    initial_authorities
+                        .iter()
+                        .map(|x| (x.0.clone(), stash_amount)),
+                )
                 .chain(
                     initial_allocation
                         .iter()
@@ -382,7 +405,14 @@ fn parami_genesis(
             minimum_validator_count: initial_authorities.len() as u32,
             stakers: initial_authorities
                 .iter()
-                .map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator))
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.1.clone(),
+                        stash_amount,
+                        StakerStatus::Validator,
+                    )
+                })
                 .collect(),
             invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
             slash_reward_fraction: Perbill::from_percent(10),
@@ -394,7 +424,7 @@ fn parami_genesis(
                 .iter()
                 .take((num_endowed_accounts + 1) / 2)
                 .cloned()
-                .map(|member| (member, STASH))
+                .map(|member| (member, stash_amount))
                 .collect(),
         }),
         pallet_collective_Instance1: Some(CouncilConfig::default()),
