@@ -159,6 +159,7 @@ fn get_initial_allocation() -> Result<(Vec<(AccountId, Balance)>, Balance), Stri
 /// - Alice to Ferdie //stash
 /// - Alice as root_key
 /// - Alice as did genesis
+/// - Alice as ads did account
 pub fn testnet_genesis(
     initial_authorities: Vec<(
         AccountId,
@@ -286,8 +287,7 @@ pub fn testnet_genesis(
             fee_to_previous: 25 * DOLLARS,
         }),
         ads: Some(AdsConfig {
-            contract: hex!["16d3ed9daeb8e8126a33843cbf1e1c09eb598413349fd4474d4b48ded3e1340b"]
-                .into(),
+            contract: get_account_id_from_seed::<sr25519::Public>("Alice").into(),
             min_deposit: 500 * DOLLARS,
         }),
     }

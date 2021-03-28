@@ -61,12 +61,27 @@ To start the Parami validater node, run:
   --node-key ..... \
   --keystore-path /path/to/auth
 ```
+### Development
 
 To start a local dev node, run:
 
 ```bash
 cargo run --release -- --dev --alice --tmp
 ```
+
+To start 2 local nodes, run:
+
+```bash
+cargo run -- --chain local --alice --tmp
+```
+
+And:
+
+```bash
+cargo run -- --chain local --bob --tmp --port 30334
+```
+
+In different terminal tab.
 
 ## Settings
 
