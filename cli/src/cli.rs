@@ -40,6 +40,9 @@ pub enum Subcommand {
     /// A set of base subcommands handled by `sc_cli`.
     #[structopt(flatten)]
     Key(sc_cli::KeySubcommand),
+    /// Export the genesis wasm of the parachain.
+    #[structopt(name = "export-genesis-wasm")]
+    ExportGenesisWasm(ExportGenesisWasmCommand),
 
     /// The custom inspect subcommmand for decoding blocks and extrinsics.
     #[structopt(
@@ -76,6 +79,21 @@ pub struct ExportGenesisStateCommand {
     pub raw: bool,
 
     /// The name of the chain for that the genesis state should be exported.
+    #[structopt(long)]
+    pub chain: Option<String>,
+}
+/// Command for exporting the genesis wasm file.
+#[derive(Debug, StructOpt)]
+pub struct ExportGenesisWasmCommand {
+    /// Output file name or stdout if unspecified.
+    #[structopt(parse(from_os_str))]
+    pub output: Option<PathBuf>,
+
+    /// Write output in binary. Default is to write in hex.
+    #[structopt(short, long)]
+    pub raw: bool,
+
+    /// The name of the chain for that the genesis wasm file should be exported.
     #[structopt(long)]
     pub chain: Option<String>,
 }
