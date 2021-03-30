@@ -19,21 +19,31 @@
 #![warn(unused_extern_crates)]
 
 //! Service implementation. Specialized wrapper over substrate service.
-
+use cumulus_client_consensus_relay_chain::{
+    build_relay_chain_consensus, BuildRelayChainConsensusParams
+};
 use futures::prelude::*;
 use parami_node_executor::Executor;
 use parami_node_primitives::Block;
+use polkadot_primitives::v0::CollatorPair;
+use cumulus_primitives_core::ParaId;
 use parami_node_rpc as node_rpc;
+use sp_trie::PrefixedMemoryDB;
+use cumulus_client_service::{
+    prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
+};
 use parami_node_runtime::RuntimeApi;
 use sc_client_api::{ExecutorProvider, RemoteBackend};
 use sc_consensus_babe;
 use sc_network::{Event, NetworkService};
-use sc_service::{config::Configuration, error::Error as ServiceError, RpcHandlers, TaskManager};
+use cumulus_client_network::build_block_announce_validator;
+use sc_service::{config::Configuration, error::Error as ServiceError, RpcHandlers, TaskManager, TFullClient, Role, PartialComponents, TFullBackend};
 use sc_telemetry::TelemetryConnectionNotifier;
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::Block as BlockT;
+use sp_runtime::traits::BlakeTwo256;
 use std::sync::Arc;
-
+use sc_telemetry::TelemetrySpan;
 type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
@@ -41,32 +51,30 @@ type FullGrandpaBlockImport =
     grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 type LightClient = sc_service::TLightClient<Block, RuntimeApi, Executor>;
 
+/// Starts a `ServiceBuilder` for a full service.
+///
+/// Use this macro if you don't actually need the full service, but just the builder in order to
+/// be able to perform chain operations.
 pub fn new_partial(
     config: &Configuration,
 ) -> Result<
-    sc_service::PartialComponents<
-        FullClient,
-        FullBackend,
-        FullSelectChain,
-        sp_consensus::DefaultImportQueue<Block, FullClient>,
-        sc_transaction_pool::FullPool<Block, FullClient>,
-        (
-            impl Fn(node_rpc::DenyUnsafe, sc_rpc::SubscriptionTaskExecutor) -> node_rpc::IoHandler,
-            (
-                sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpaBlockImport>,
-                grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
-                sc_consensus_babe::BabeLink<Block>,
-            ),
-            grandpa::SharedVoterState,
-        ),
+    PartialComponents<
+        TFullClient<Block, RuntimeApi, Executor>,
+        TFullBackend<Block>,
+        (),
+        sp_consensus::import_queue::BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
+        sc_transaction_pool::FullPool<Block, TFullClient<Block, RuntimeApi, Executor>>,
+        (),
     >,
-    ServiceError,
+    sc_service::Error,
 > {
+    let inherent_data_providers = sp_inherents::InherentDataProviders::new();
+
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config)?;
     let client = Arc::new(client);
 
-    let select_chain = sc_consensus::LongestChain::new(backend.clone());
+    let registry = config.prometheus_registry();
 
     let transaction_pool = sc_transaction_pool::BasicPool::new_full(
         config.transaction_pool.clone(),
@@ -76,95 +84,27 @@ pub fn new_partial(
         client.clone(),
     );
 
-    let (grandpa_block_import, grandpa_link) = grandpa::block_import(
+    let import_queue = cumulus_client_consensus_relay_chain::import_queue(
         client.clone(),
-        &(client.clone() as Arc<_>),
-        select_chain.clone(),
-    )?;
-    let justification_import = grandpa_block_import.clone();
-
-    let (block_import, babe_link) = sc_consensus_babe::block_import(
-        sc_consensus_babe::Config::get_or_compute(&*client)?,
-        grandpa_block_import,
         client.clone(),
-    )?;
-
-    let inherent_data_providers = sp_inherents::InherentDataProviders::new();
-
-    let import_queue = sc_consensus_babe::import_queue(
-        babe_link.clone(),
-        block_import.clone(),
-        Some(Box::new(justification_import)),
-        client.clone(),
-        select_chain.clone(),
         inherent_data_providers.clone(),
-        &task_manager.spawn_handle(),
-        config.prometheus_registry(),
-        sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+        &task_manager.spawn_essential_handle(),
+        registry.clone(),
     )?;
 
-    let import_setup = (block_import, grandpa_link, babe_link);
-
-    let (rpc_extensions_builder, rpc_setup) = {
-        let (_, grandpa_link, babe_link) = &import_setup;
-
-        let justification_stream = grandpa_link.justification_stream();
-        let shared_authority_set = grandpa_link.shared_authority_set().clone();
-        let shared_voter_state = grandpa::SharedVoterState::empty();
-
-        let rpc_setup = shared_voter_state.clone();
-        let finality_proof_provider = grandpa::FinalityProofProvider::new_for_service(
-            backend.clone(),
-            Some(shared_authority_set.clone()),
-        );
-
-        let babe_config = babe_link.config().clone();
-        let shared_epoch_changes = babe_link.epoch_changes().clone();
-
-        let client = client.clone();
-        let pool = transaction_pool.clone();
-        let select_chain = select_chain.clone();
-        let keystore = keystore_container.sync_keystore();
-        let chain_spec = config.chain_spec.cloned_box();
-
-        let rpc_extensions_builder = move |deny_unsafe, subscription_executor| {
-            let deps = node_rpc::FullDeps {
-                client: client.clone(),
-                pool: pool.clone(),
-                select_chain: select_chain.clone(),
-                chain_spec: chain_spec.cloned_box(),
-                deny_unsafe,
-                babe: node_rpc::BabeDeps {
-                    babe_config: babe_config.clone(),
-                    shared_epoch_changes: shared_epoch_changes.clone(),
-                    keystore: keystore.clone(),
-                },
-                grandpa: node_rpc::GrandpaDeps {
-                    shared_voter_state: shared_voter_state.clone(),
-                    shared_authority_set: shared_authority_set.clone(),
-                    justification_stream: justification_stream.clone(),
-                    subscription_executor,
-                    finality_provider: finality_proof_provider.clone(),
-                },
-            };
-
-            node_rpc::create_full(deps)
-        };
-
-        (rpc_extensions_builder, rpc_setup)
-    };
-
-    Ok(sc_service::PartialComponents {
-        client,
+    let params = PartialComponents {
         backend,
-        task_manager,
-        keystore_container,
-        select_chain,
+        client,
         import_queue,
+        keystore_container,
+        task_manager,
         transaction_pool,
         inherent_data_providers,
-        other: (rpc_extensions_builder, import_setup, rpc_setup),
-    })
+        select_chain: (),
+        other: (),
+    };
+
+    Ok(params)
 }
 
 pub struct NewFullBase {
@@ -489,7 +429,172 @@ pub fn new_light_base(
     ))
 }
 
+
+
 /// Builds a new service for a light client.
 pub fn new_light(config: Configuration) -> Result<TaskManager, ServiceError> {
     new_light_base(config).map(|(task_manager, _, _, _, _, _)| task_manager)
+}
+
+/// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
+///
+/// This is the actual implementation that is abstract over the executor and the runtime api.
+#[sc_tracing::logging::prefix_logs_with("Parachain")]
+async fn start_node_impl<RB>(
+    parachain_config: Configuration,
+    collator_key: CollatorPair,
+    polkadot_config: Configuration,
+    id: ParaId,
+    validator: bool,
+    rpc_ext_builder: RB,
+) -> sc_service::error::Result<(TaskManager, Arc<TFullClient<Block, RuntimeApi, Executor>>)>
+    where
+        RB: Fn(
+            Arc<TFullClient<Block, RuntimeApi, Executor>>,
+        ) -> jsonrpc_core::IoHandler<sc_rpc::Metadata>
+        + Send
+        + 'static,
+{
+    if matches!(parachain_config.role, Role::Light) {
+        return Err("Light client not supported!".into());
+    }
+
+    let parachain_config = prepare_node_config(parachain_config);
+
+    let polkadot_full_node =
+        cumulus_client_service::build_polkadot_full_node(polkadot_config, collator_key.public())
+            .map_err(|e| match e {
+                polkadot_service::Error::Sub(x) => x,
+                s => format!("{}", s).into(),
+            })?;
+
+    let params = new_partial(&parachain_config)?;
+    params
+        .inherent_data_providers
+        .register_provider(sp_timestamp::InherentDataProvider)
+        .unwrap();
+
+    let client = params.client.clone();
+    let backend = params.backend.clone();
+    let block_announce_validator = build_block_announce_validator(
+        polkadot_full_node.client.clone(),
+        id,
+        Box::new(polkadot_full_node.network.clone()),
+        polkadot_full_node.backend.clone(),
+    );
+
+    let prometheus_registry = parachain_config.prometheus_registry().cloned();
+    let transaction_pool = params.transaction_pool.clone();
+    let mut task_manager = params.task_manager;
+    let import_queue = params.import_queue;
+    let (network, network_status_sinks, system_rpc_tx, start_network) =
+        sc_service::build_network(sc_service::BuildNetworkParams {
+            config: &parachain_config,
+            client: client.clone(),
+            transaction_pool: transaction_pool.clone(),
+            spawn_handle: task_manager.spawn_handle(),
+            import_queue,
+            on_demand: None,
+            block_announce_validator_builder: Some(Box::new(|_| block_announce_validator)),
+        })?;
+
+    let rpc_client = client.clone();
+    let rpc_extensions_builder = Box::new(move |_, _| rpc_ext_builder(rpc_client.clone()));
+
+    let telemetry_span = TelemetrySpan::new();
+    let _telemetry_span_entered = telemetry_span.enter();
+
+    if parachain_config.offchain_worker.enabled {
+        sc_service::build_offchain_workers(
+            &parachain_config, backend.clone(), task_manager.spawn_handle(), client.clone(), network.clone(),
+        );
+    }
+
+    sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+        on_demand: None,
+        remote_blockchain: None,
+        rpc_extensions_builder,
+        client: client.clone(),
+        transaction_pool: transaction_pool.clone(),
+        task_manager: &mut task_manager,
+        config: parachain_config,
+        keystore: params.keystore_container.sync_keystore(),
+        backend: backend.clone(),
+        network: network.clone(),
+        network_status_sinks,
+        system_rpc_tx,
+        telemetry_span: Some(telemetry_span.clone()),
+    })?;
+
+    let announce_block = {
+        let network = network.clone();
+        Arc::new(move |hash, data| network.announce_block(hash, Some(data)))
+    };
+
+    if validator {
+        let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
+            task_manager.spawn_handle(),
+            client.clone(),
+            transaction_pool,
+            prometheus_registry.as_ref(),
+        );
+        let spawner = task_manager.spawn_handle();
+
+        let parachain_consensus = build_relay_chain_consensus(BuildRelayChainConsensusParams {
+            para_id: id,
+            proposer_factory,
+            inherent_data_providers: params.inherent_data_providers,
+            block_import: client.clone(),
+            relay_chain_client: polkadot_full_node.client.clone(),
+            relay_chain_backend: polkadot_full_node.backend.clone(),
+        });
+
+        let params = StartCollatorParams {
+            para_id: id,
+            block_status: client.clone(),
+            announce_block,
+            client: client.clone(),
+            task_manager: &mut task_manager,
+            collator_key,
+            relay_chain_full_node: polkadot_full_node,
+            spawner,
+            backend,
+            parachain_consensus,
+        };
+
+        start_collator(params).await?;
+    } else {
+        let params = StartFullNodeParams {
+            client: client.clone(),
+            announce_block,
+            task_manager: &mut task_manager,
+            para_id: id,
+            polkadot_full_node,
+        };
+
+        start_full_node(params)?;
+    }
+
+    start_network.start_network();
+
+    Ok((task_manager, client))
+}
+
+/// Start a normal parachain node.
+pub async fn start_node(
+    parachain_config: Configuration,
+    collator_key: CollatorPair,
+    polkadot_config: Configuration,
+    id: ParaId,
+    validator: bool,
+) -> sc_service::error::Result<(TaskManager, Arc<TFullClient<Block, RuntimeApi, Executor>>)> {
+    start_node_impl(
+        parachain_config,
+        collator_key,
+        polkadot_config,
+        id,
+        validator,
+        |_| Default::default(),
+    )
+        .await
 }

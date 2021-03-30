@@ -20,4 +20,4 @@ sc-service = { version = "0.9.0", default-features = false, path = "../substrate
 sp-blockchain = { version = "3.0.0", path = "../substrate/primitives/blockchain" }
 sp-core = { version = "3.0.0", path = "../substrate/primitives/core" }
 sp-runtime = { version = "3.0.0", path = "../substrate/primitives/runtime" }
-structopt = "0.3.8"
+structopt = "0.3.21"
