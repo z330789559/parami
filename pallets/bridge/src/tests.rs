@@ -1,0 +1,10 @@
+#![cfg(test)]
+
+use super::*;
+use frame_support::{assert_noop, assert_ok};
+use crate::mock::{Event, *};
+
+#[test]
+fn it_works() {
+
+}
