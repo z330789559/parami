@@ -83,6 +83,14 @@ cargo run -- --chain local --bob --tmp --port 30334
 
 In different terminal tab.
 
+# Channel
+
+[Parami Developers & Users](https://discord.gg/hcxjN2Ys) is Parami's official Discord channel. Feel free to join this channel if you have any questions.
+
+[Core Cn Devs Community](https://t.me/joinchat/iIZyaYoeq15hNGI9) is the Telegram channel for Parami community developers. If you want to contribute to java-tron, please join this channel.
+
+[tronprotocol/allcoredev](https://gitter.im/tronprotocol/allcoredev) is the official Gitter channel for developers.
+
 ## Settings
 
 1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: `ws://apps.parami.io/v2/ws`
