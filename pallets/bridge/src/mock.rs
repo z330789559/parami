@@ -120,6 +120,12 @@ impl pallet_proxy::Config for Runtime {
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 }
 
+impl parami_bridge::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Currency = Balances;
+}
+
 use frame_system::Call as SystemCall;
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -135,6 +141,7 @@ construct_runtime!(
 		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
 		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Module, Call, Event},
+		Bridge: parami_bridge::{Module, Call, Event<T>},
 	}
 );
 
