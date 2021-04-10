@@ -2,19 +2,18 @@
 
 use frame_support::{
 	pallet_prelude::*,
-	traits::{Currency, ReservableCurrency, ExistenceRequirement::KeepAlive},
-	transactional, dispatch::DispatchResult
+	traits::{Currency},
+	transactional,
 };
-use sp_std::{fmt::Debug, vec::Vec};
+use sp_std::{vec::Vec};
 use frame_system::pallet_prelude::*;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
-	traits::{CheckedAdd, Bounded, CheckedSub, Saturating,
-			 AccountIdConversion, StaticLookup, Zero, One, AtLeast32BitUnsigned},
-	ModuleId, RuntimeDebug, SaturatedConversion,
+	traits::{Saturating,
+			 StaticLookup},
+	RuntimeDebug,
 };
-use codec::FullCodec;
 
 mod mock;
 mod tests;
@@ -23,13 +22,26 @@ pub use module::*;
 
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct Erc20Transfer<Balance> {
-	/// Value
-	#[codec(compact)]
-	pub value: Balance,
-	// From
-	pub from: Vec<u8>,
+pub enum Erc20Event<Balance> {
+	Transfer {
+		/// Value
+		#[codec(compact)]
+		value: Balance,
+		// From
+		from: Vec<u8>,
+	},
+	Withdraw {
+		/// Value
+		#[codec(compact)]
+		value: Balance,
+		// Who
+		who: Vec<u8>,
+		// True for success.
+		status: bool,
+	}
 }
+
+type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod module {
@@ -39,9 +51,6 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		/// The overarching event type.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-		/// The balance of an account.
-		type Balance: Parameter + Member + AtLeast32BitUnsigned + codec::Codec + Default + Copy + MaybeSerializeDeserialize + Debug;
 
 		/// The currency trait.
 		type Currency: Currency<Self::AccountId>;
@@ -53,15 +62,15 @@ pub mod module {
 		BridgeAdminNotSet,
 		/// no permission
 		NoPermission,
-		/// duplicated tx hash
-		DuplicatedTxHash,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Received Erc20 Transfer event \[tx_hash\]
-		Deposited(Vec<u8>),
+		Transfer(Vec<u8>),
+		/// Received Erc20 Withdraw event \[tx_hash, status\]
+		Withdraw(Vec<u8>, bool),
 	}
 
 	#[pallet::pallet]
@@ -105,14 +114,14 @@ pub mod module {
 	/// `tx_hash` map to `Erc20Transfer`
 	#[pallet::storage]
 	#[pallet::getter(fn erc20_txs)]
-	pub type Erc20Txs<T: Config> = StorageMap<_, Identity, Vec<u8>, Erc20Transfer<T::Balance>>;
+	pub type Erc20Txs<T: Config> = StorageMap<_, Identity, Vec<u8>, Erc20Event<BalanceOf<T>>>;
 
 	/// Erc20 balances in parami
 	///
 	/// `eth_addr` map to value.
 	#[pallet::storage]
 	#[pallet::getter(fn erc20_balances)]
-	pub type Erc20Balances<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, T::Balance, ValueQuery>;
+	pub type Erc20Balances<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, BalanceOf<T>, ValueQuery>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -129,18 +138,18 @@ pub mod module {
 			Ok((None, Pays::No).into())
 		}
 
-		/// Received an `Transfer` event from ethereum erc20 contract.
+		/// Received a `Transfer` event from ethereum erc20 contract.
 		///
 		/// - `tx_hash`: The transaction hash of this erc20 event in ethereum.
 		/// - `value`: Amount transferred.
 		/// - `eth_addr`: `value` was transferred from `eth_addr`.
 		#[pallet::weight((100_000, DispatchClass::Operational, Pays::Yes))]
 		#[transactional]
-		pub fn deposit(
+		pub fn transfer(
 			origin: OriginFor<T>,
 			tx_hash: Vec<u8>,
 			eth_addr: Vec<u8>,
-			#[pallet::compact] value: T::Balance,
+			#[pallet::compact] value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(who == Self::bridge_admin().ok_or(Error::<T>::BridgeAdminNotSet)?, Error::<T>::NoPermission);
@@ -149,13 +158,55 @@ pub mod module {
 					Erc20Balances::<T>::mutate(&eth_addr, |balance| {
 						*balance = balance.saturating_add(value);
 					});
-
-					*maybe_tx = Some(Erc20Transfer {
+					*maybe_tx = Some(Erc20Event::Transfer {
 						value,
 						from: eth_addr,
 					});
+					Self::deposit_event(Event::Transfer(tx_hash));
+				}
+			});
+			Ok((None, Pays::No).into())
+		}
 
-					Self::deposit_event(Event::Deposited(tx_hash));
+		/// Received a `Withdraw` event from ethereum erc20 contract.
+		///
+		/// - `tx_hash`: The transaction hash of this erc20 event in ethereum.
+		/// - `from_eth_addr`:  withdraw `value` by ethereum account `from_eth_addr`.
+		/// - `to`:  the beneficiary account in Parami.
+		/// - `value`:  value to be withdraw
+		#[pallet::weight((100_000, DispatchClass::Operational, Pays::Yes))]
+		#[transactional]
+		pub fn withdraw(
+			origin: OriginFor<T>,
+			tx_hash: Vec<u8>,
+			from_eth_addr: Vec<u8>,
+			to: <T::Lookup as StaticLookup>::Source,
+			#[pallet::compact] value: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			ensure!(who == Self::bridge_admin().ok_or(Error::<T>::BridgeAdminNotSet)?, Error::<T>::NoPermission);
+			let to = T::Lookup::lookup(to)?;
+			Erc20Txs::<T>::mutate_exists(tx_hash.clone(), |maybe_tx| {
+				if maybe_tx.is_none() {
+					Erc20Balances::<T>::mutate(from_eth_addr.clone(), |balance| {
+						if *balance >= value {
+							*balance -= value;
+							let _ = T::Currency::deposit_creating(&to, value);
+							*maybe_tx = Some(Erc20Event::Withdraw {
+								value,
+								who: from_eth_addr,
+								status: true,
+							});
+							Self::deposit_event(Event::Withdraw(tx_hash, true));
+						} else {
+							*maybe_tx = Some(Erc20Event::Withdraw {
+								value,
+								who: from_eth_addr,
+								status: false,
+							});
+							Self::deposit_event(Event::Withdraw(tx_hash, false));
+						}
+					});
 				}
 			});
 			Ok((None, Pays::No).into())

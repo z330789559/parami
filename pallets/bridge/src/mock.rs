@@ -1,7 +1,6 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{assert_ok};
 use crate as parami_bridge;
 use codec::{Decode, Encode};
 use frame_support::{
@@ -122,7 +121,6 @@ impl pallet_proxy::Config for Runtime {
 
 impl parami_bridge::Config for Runtime {
 	type Event = Event;
-	type Balance = Balance;
 	type Currency = Balances;
 }
 
@@ -147,7 +145,6 @@ construct_runtime!(
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
-pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
