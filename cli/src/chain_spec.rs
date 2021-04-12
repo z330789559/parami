@@ -50,7 +50,7 @@ type AccountPublic = <Signature as Verify>::Signer;
 const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 const PRA_PROPERTIES: &str = r#"
 		{
-			"tokenDecimals": 15,
+			"tokenDecimals": 8,
 			"tokenSymbol": "AD3"
 		}"#;
 
@@ -333,6 +333,7 @@ fn local_testnet_genesis() -> GenesisConfig {
 
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
+	let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
     ChainSpec::from_genesis(
         "Local Testnet",
         "local_testnet",
@@ -341,7 +342,7 @@ pub fn local_testnet_config() -> ChainSpec {
         vec![],
         None,
         None,
-        None,
+		properties,
         Default::default(),
     )
 }

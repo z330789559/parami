@@ -187,7 +187,22 @@ In different terminal tab.
             "Claimed",
             "Refunded"
         ]
-    }
+    },
+	"Erc20EventTransfer":{
+		"value": "Compact<Balance>",
+		"from": "Vec<u8>"
+	},
+	"Erc20EventWithdraw" :{
+		"value": "Compact<Balance>",
+		"who": "Vec<u8>",
+		"status": "bool"
+	},
+	"Erc20Event": {
+		"_enum": {
+			"Transfer": "Erc20EventTransfer",
+			"Withdraw": "Erc20EventWithdraw"
+		}
+	}
 }
 ```
 
