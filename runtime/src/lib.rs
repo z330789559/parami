@@ -38,8 +38,8 @@ use frame_support::{
     },
 };
 use frame_system::{
-    limits::{BlockLength, BlockWeights},
-    EnsureOneOf, EnsureRoot,
+	limits::{BlockLength, BlockWeights},
+	EnsureOneOf, EnsureRoot,
 };
 use pallet_contracts::WeightInfo;
 use pallet_contracts_primitives::ContractExecResult;
@@ -877,6 +877,11 @@ impl ads::Config for Runtime {
     type Event = Event;
 }
 
+impl parami_bridge::Config for Runtime {
+    type Event = Event;
+	type Currency = Balances;
+}
+
 // use oracle::sr25519::AuthorityId as OracleId;
 // We need to define the Transaction signer for that using the Key definition
 // type SubmitTransactionOracle = TransactionSubmitter<OracleId, Runtime, UncheckedExtrinsic>;
@@ -923,6 +928,7 @@ construct_runtime!(
 
         Did: did::{Module, Storage, Call, Config<T>, Event<T>},
         Ads: ads::{Module, Storage, Call, Config<T>, Event<T>},
+        Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
 
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 

@@ -4914,6 +4914,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-utility",
+ "parami-bridge",
  "parami-node-primitives",
  "parity-scale-codec",
  "serde",
