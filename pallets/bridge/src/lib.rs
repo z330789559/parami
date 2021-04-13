@@ -22,7 +22,7 @@ pub use module::*;
 
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum Erc20Event<Balance> {
+pub enum Erc20Event<Balance, AccountId> {
 	Transfer {
 		/// Value
 		#[codec(compact)]
@@ -38,6 +38,15 @@ pub enum Erc20Event<Balance> {
 		who: Vec<u8>,
 		// True for success.
 		status: bool,
+	},
+	Redeem {
+		/// Value
+		#[codec(compact)]
+		value: Balance,
+		// from
+		from: Vec<u8>,
+		// to
+		to: AccountId,
 	}
 }
 
@@ -71,6 +80,8 @@ pub mod module {
 		Transfer(Vec<u8>),
 		/// Received Erc20 Withdraw event \[tx_hash, status\]
 		Withdraw(Vec<u8>, bool),
+		/// Received Erc20 Redeem event \[tx_hash\]
+		Redeem(Vec<u8>),
 	}
 
 	#[pallet::pallet]
@@ -114,7 +125,7 @@ pub mod module {
 	/// `tx_hash` map to `Erc20Transfer`
 	#[pallet::storage]
 	#[pallet::getter(fn erc20_txs)]
-	pub type Erc20Txs<T: Config> = StorageMap<_, Identity, Vec<u8>, Erc20Event<BalanceOf<T>>>;
+	pub type Erc20Txs<T: Config> = StorageMap<_, Identity, Vec<u8>, Erc20Event<BalanceOf<T>, T::AccountId>>;
 
 	/// Erc20 balances in parami
 	///
@@ -135,6 +146,38 @@ pub mod module {
 			ensure_root(origin)?;
 			let admin = T::Lookup::lookup(admin)?;
 			BridgeAdmin::<T>::put(admin);
+			Ok((None, Pays::No).into())
+		}
+
+		/// Received a `Redeem` event from ethereum erc20 contract.
+		///
+		/// - `tx_hash`: The transaction hash of this erc20 event in ethereum.
+		/// - `from_eth_addr`:  redeem `value` by ethereum account `from_eth_addr`.
+		/// - `to`:  the beneficiary account in Parami.
+		/// - `value`:  value to be redeem
+		#[pallet::weight((100_000, DispatchClass::Operational, Pays::Yes))]
+		#[transactional]
+		pub fn redeem(
+			origin: OriginFor<T>,
+			tx_hash: Vec<u8>,
+			from_eth_addr: Vec<u8>,
+			to: <T::Lookup as StaticLookup>::Source,
+			#[pallet::compact] value: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			ensure!(who == Self::bridge_admin().ok_or(Error::<T>::BridgeAdminNotSet)?, Error::<T>::NoPermission);
+			let to = T::Lookup::lookup(to)?;
+			Erc20Txs::<T>::mutate_exists(tx_hash.clone(), |maybe_tx| {
+				if maybe_tx.is_none() {
+					let _ = T::Currency::deposit_creating(&to, value);
+					*maybe_tx = Some(Erc20Event::Redeem {
+						value,
+						from: from_eth_addr,
+						to,
+					});
+					Self::deposit_event(Event::Redeem(tx_hash));
+				}
+			});
 			Ok((None, Pays::No).into())
 		}
 

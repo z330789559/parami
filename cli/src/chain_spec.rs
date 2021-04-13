@@ -50,7 +50,7 @@ type AccountPublic = <Signature as Verify>::Signer;
 const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 const PRA_PROPERTIES: &str = r#"
 		{
-			"tokenDecimals": 8,
+			"tokenDecimals": 15,
 			"tokenSymbol": "AD3"
 		}"#;
 

@@ -197,10 +197,16 @@ In different terminal tab.
 		"who": "Vec<u8>",
 		"status": "bool"
 	},
+	"Erc20EventRedeem" :{
+		"value": "Compact<Balance>",
+		"from": "Vec<u8>",
+		"to": "AccountId"
+	},
 	"Erc20Event": {
 		"_enum": {
 			"Transfer": "Erc20EventTransfer",
-			"Withdraw": "Erc20EventWithdraw"
+			"Withdraw": "Erc20EventWithdraw",
+			"Redeem": "Erc20EventRedeem"
 		}
 	}
 }

@@ -9,6 +9,49 @@ pub fn free_balance(who: &AccountId) -> Balance {
 }
 
 #[test]
+fn redeem_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		let tx_hash_redeem1 = ||{vec![121]};
+		let tx_hash_redeem2 = ||{vec![122]};
+		let tx_hash_redeem3 = ||{vec![123]};
+		let eth_addr = ||{vec![22]};
+
+		assert_ok!(Bridge::set_bridge_admin(Origin::root(), ALICE));
+		assert_eq!(None, Bridge::erc20_txs(tx_hash_redeem1()));
+		assert_eq!(None, Bridge::erc20_txs(tx_hash_redeem2()));
+		assert_eq!(None, Bridge::erc20_txs(tx_hash_redeem3()));
+
+		assert_eq!(0, free_balance(&BOB));
+		assert_ok!(Bridge::redeem(Origin::signed(ALICE), tx_hash_redeem1(), eth_addr(), BOB, 200));
+		assert_eq!(200, free_balance(&BOB));
+		assert_ok!(Bridge::redeem(Origin::signed(ALICE), tx_hash_redeem1(), eth_addr(), BOB, 200));
+		assert_eq!(200, free_balance(&BOB));
+
+		assert_eq!(last_event(), Event::parami_bridge(crate::Event::Redeem(tx_hash_redeem1())));
+
+		assert_ok!(Bridge::redeem(Origin::signed(ALICE), tx_hash_redeem2(), eth_addr(), BOB, 200));
+		assert_eq!(400, free_balance(&BOB));
+		assert_eq!(last_event(), Event::parami_bridge(crate::Event::Redeem(tx_hash_redeem2())));
+	});
+}
+
+#[test]
+fn redeem_should_fail() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_noop!(
+			Bridge::redeem(Origin::signed(ALICE), vec![11], vec![22], BOB, 444),
+			Error::<Runtime>::BridgeAdminNotSet,
+		);
+
+		assert_ok!(Bridge::set_bridge_admin(Origin::root(), ALICE));
+		assert_noop!(
+			Bridge::redeem(Origin::signed(BOB), vec![11], vec![22], ALICE, 444),
+			Error::<Runtime>::NoPermission,
+		);
+	});
+}
+
+#[test]
 fn withdraw_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		let tx_hash_transfer = ||{vec![11]};
