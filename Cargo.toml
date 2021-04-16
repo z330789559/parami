@@ -9,6 +9,7 @@ members = [
 	"rpc",
 	"pallets/did",
 	"pallets/ads",
+	"pallets/bridge",
 	"runtime",
 ]
 

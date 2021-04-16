@@ -290,6 +290,7 @@ pub fn testnet_genesis(
             contract: get_account_id_from_seed::<sr25519::Public>("Alice").into(),
             min_deposit: 500 * DOLLARS,
         }),
+        parami_bridge: Some(Default::default()),
     }
 }
 
@@ -332,6 +333,7 @@ fn local_testnet_genesis() -> GenesisConfig {
 
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
+	let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
     ChainSpec::from_genesis(
         "Local Testnet",
         "local_testnet",
@@ -340,7 +342,7 @@ pub fn local_testnet_config() -> ChainSpec {
         vec![],
         None,
         None,
-        None,
+		properties,
         Default::default(),
     )
 }
@@ -467,6 +469,7 @@ fn parami_genesis(
                 .into(),
             min_deposit: 100 * DOLLARS,
         }),
+		parami_bridge: Some(Default::default()),
     }
 }
 
