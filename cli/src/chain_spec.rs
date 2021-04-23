@@ -291,6 +291,7 @@ pub fn testnet_genesis(
             min_deposit: 500 * DOLLARS,
         }),
         parami_bridge: Some(Default::default()),
+        pallet_nft : Some(Default::default()),
     }
 }
 
@@ -470,6 +471,7 @@ fn parami_genesis(
             min_deposit: 100 * DOLLARS,
         }),
 		parami_bridge: Some(Default::default()),
+        pallet_nft: Some(Default::default()),
     }
 }
 

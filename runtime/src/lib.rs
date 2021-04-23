@@ -882,6 +882,9 @@ impl parami_bridge::Config for Runtime {
 	type Currency = Balances;
 }
 
+impl nft::Config for Runtime {
+    type Event = Event;
+}
 // use oracle::sr25519::AuthorityId as OracleId;
 // We need to define the Transaction signer for that using the Key definition
 // type SubmitTransactionOracle = TransactionSubmitter<OracleId, Runtime, UncheckedExtrinsic>;
@@ -929,7 +932,7 @@ construct_runtime!(
         Did: did::{Module, Storage, Call, Config<T>, Event<T>},
         Ads: ads::{Module, Storage, Call, Config<T>, Event<T>},
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
-
+        Nft: did::{Module, Storage, Call, Config<T>, Event<T>},
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
     }
