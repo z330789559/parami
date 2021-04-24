@@ -291,6 +291,7 @@ pub fn testnet_genesis(
             min_deposit: 500 * DOLLARS,
         }),
         parami_bridge: Some(Default::default()),
+        parami_nft: Some(Default::default()),
     }
 }
 
@@ -333,7 +334,7 @@ fn local_testnet_genesis() -> GenesisConfig {
 
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
+    let properties = serde_json::from_str(PRA_PROPERTIES).unwrap();
     ChainSpec::from_genesis(
         "Local Testnet",
         "local_testnet",
@@ -342,7 +343,7 @@ pub fn local_testnet_config() -> ChainSpec {
         vec![],
         None,
         None,
-		properties,
+        properties,
         Default::default(),
     )
 }
@@ -469,7 +470,8 @@ fn parami_genesis(
                 .into(),
             min_deposit: 100 * DOLLARS,
         }),
-		parami_bridge: Some(Default::default()),
+        parami_bridge: Some(Default::default()),
+        parami_nft: Some(Default::default()),
     }
 }
 

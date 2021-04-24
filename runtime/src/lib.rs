@@ -38,8 +38,8 @@ use frame_support::{
     },
 };
 use frame_system::{
-	limits::{BlockLength, BlockWeights},
-	EnsureOneOf, EnsureRoot,
+    limits::{BlockLength, BlockWeights},
+    EnsureOneOf, EnsureRoot,
 };
 use pallet_contracts::WeightInfo;
 use pallet_contracts_primitives::ContractExecResult;
@@ -879,8 +879,23 @@ impl ads::Config for Runtime {
 
 impl parami_bridge::Config for Runtime {
     type Event = Event;
-	type Currency = Balances;
+    type Currency = Balances;
 }
+
+/*** Parami NFT ***/
+parameter_types! {
+    pub const MaxNFT: u128 = 2^64;
+    pub const MaxNFTPerUser: u64 = 256;
+}
+
+impl parami_nft::Config for Runtime {
+    type CommodityAdmin = frame_system::EnsureRoot<AccountId>;
+    type CommodityInfo = Vec<u8>;
+    type CommodityLimit = MaxNFT;
+    type UserCommodityLimit = MaxNFTPerUser;
+    type Event = Event;
+}
+/*** Parami NFT ***/
 
 // use oracle::sr25519::AuthorityId as OracleId;
 // We need to define the Transaction signer for that using the Key definition
@@ -929,6 +944,7 @@ construct_runtime!(
         Did: did::{Module, Storage, Call, Config<T>, Event<T>},
         Ads: ads::{Module, Storage, Call, Config<T>, Event<T>},
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
+        Nft: parami_nft::{Module, Storage, Call, Config<T>, Event<T>},
 
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
