@@ -54,15 +54,15 @@ impl frame_system::Config for Test {
 
 // Parami NFT Config
 parameter_types! {
-    pub const MaxNFT: u128 = 2^64;
-    pub const MaxNFTPerUser: u64 = 256;
+    pub const MaxCommodities: u128 = 5;
+    pub const MaxCommoditiesPerUser: u64 = 2;
 }
 
 impl parami_nft::Config for Test {
     type CommodityAdmin = frame_system::EnsureRoot<u64>;
     type CommodityInfo = Vec<u8>;
-    type CommodityLimit = MaxNFT;
-    type UserCommodityLimit = MaxNFTPerUser;
+    type CommodityLimit = MaxCommodities;
+    type UserCommodityLimit = MaxCommoditiesPerUser;
     type Event = Event;
 }
 // Parami NFT Config
