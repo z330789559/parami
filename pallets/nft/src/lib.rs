@@ -49,11 +49,11 @@ use sp_std::{cmp::Eq, fmt::Debug, vec::Vec};
 pub mod nft;
 pub use crate::nft::UniqueAssets;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 pub trait Config<I = DefaultInstance>: frame_system::Config {
     /// The dispatch origin that is able to mint new instances of this type of commodity.
