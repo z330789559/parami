@@ -4792,6 +4792,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "parami-nft"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-proxy",
+ "pallet-timestamp",
+ "pallet-utility",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "parami-node-executor"
 version = "3.0.0"
 dependencies = [
@@ -4915,6 +4933,7 @@ dependencies = [
  "pallet-treasury",
  "pallet-utility",
  "parami-bridge",
+ "parami-nft",
  "parami-node-primitives",
  "parity-scale-codec",
  "serde",
