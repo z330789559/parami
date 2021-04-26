@@ -61,6 +61,7 @@ To start the Parami validater node, run:
   --node-key ..... \
   --keystore-path /path/to/auth
 ```
+
 ### Development
 
 To start a local dev node, run:
@@ -85,119 +86,104 @@ In different terminal tab.
 
 ## Settings
 
-1) Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: `ws://apps.parami.io/v2/ws`
+1. Open [Polkadot UI](https://polkadot.js.org/apps/#/explorer) , Settings -> custom endpoint: `ws://apps.parami.io/v2/ws`
 
-2) Go to *Settings*, open *Developer* tab. Insert in textbox description of types (copy&paste from here) and Save it.
+2. Go to _Settings_, open _Developer_ tab. Insert in textbox description of types (copy&paste from here) and Save it.
 
 ```json
 {
-    "Address": "MultiAddress",
-    "LookupSource": "MultiAddress",
-    "Did":"Vec<u8>",
-    "ExternalAddress":{
-        "btc":"Vec<u8>",
-        "eth":"Vec<u8>",
-        "eos":"Vec<u8>"
-    },
-    "LockedRecords":{
-        "locked_time":"Moment",
-        "locked_period":"Moment",
-        "locked_funds":"Balance",
-        "rewards_ratio":"u64",
-        "max_quota":"u64"
-    },
-    "UnlockedRecords":{
-        "unlocked_time":"Moment",
-        "unlocked_funds":"Balance"
-    },
-    "MetadataRecord":{
-        "address":"AccountId",
-        "superior":"Hash",
-        "creator":"AccountId",
-        "did":"Did",
-        "locked_records":"Option<LockedRecords<Balance, Moment>>",
-        "unlocked_records":"Option<UnlockedRecords<Balance, Moment>>",
-        "donate":"Option<Balance>",
-        "social_account":"Option<Hash>",
-        "subordinate_count":"u64",
-        "group_name":"Option<Vec<u8>>",
-        "external_address":"ExternalAddress"
-    },
-    "AdsLinkedItem":{
-        "prev":"Option<AdIndex>",
-        "next":"Option<AdIndex>"
-    },
-    "ActiveIndex":"u64",
-    "AdIndex":"u64",
-    "DistributeType":{
-        "_enum":[
-            "ADVERTISER",
-            "AGENT"
-        ]
-    },
-    "AdsMetadata":{
-        "advertiser":"Vec<u8>",
-        "topic":"Vec<u8>",
-        "total_amount":"Balance",
-        "spend_amount":"Balance",
-        "single_click_fee":"Balance",
-        "display_page":"Vec<u8>",
-        "landing_page":"Option<Vec<u8>>",
-        "create_time":"Moment",
-        "active":"Option<ActiveIndex>",
-        "distribute_type":"DistributeType"
-    },
-    "EventHTLC":{
-        "eth_contract_addr":"Vec<u8>",
-        "htlc_block_number":"BlockNumber",
-        "event_block_number":"BlockNumber",
-        "expire_height":"u32",
-        "random_number_hash":"Vec<u8>",
-        "swap_id":"Hash",
-        "sender_addr":"Vec<u8>",
-        "sender_chain_type":"HTLCChain",
-        "receiver_addr":"Hash",
-        "receiver_chain_type":"HTLCChain",
-        "recipient_addr":"Vec<u8>",
-        "out_amount":"Balance",
-        "event_type":"HTLCType"
-    },
-    "HTLCChain":{
-        "_enum":[
-            "ETHMain",
-            "PRM"
-        ]
-    },
-    "HTLCStates":{
-        "_enum":[
-            "INVALID",
-            "OPEN",
-            "COMPLETED",
-            "EXPIRED"
-        ]
-    },
-    "EventLogSource":{
-        "event_name":"Vec<u8>",
-        "event_url":"Vec<u8>",
-        "event_data":"Vec<u8>"
-    },
-    "HTLCType":{
-        "_enum":[
-            "HTLC",
-            "Claimed",
-            "Refunded"
-        ]
-    },
-	"Erc20EventTransfer":{
+	"Address": "MultiAddress",
+	"LookupSource": "MultiAddress",
+	"Did": "Vec<u8>",
+	"ExternalAddress": {
+		"btc": "Vec<u8>",
+		"eth": "Vec<u8>",
+		"eos": "Vec<u8>"
+	},
+	"LockedRecords": {
+		"locked_time": "Moment",
+		"locked_period": "Moment",
+		"locked_funds": "Balance",
+		"rewards_ratio": "u64",
+		"max_quota": "u64"
+	},
+	"UnlockedRecords": {
+		"unlocked_time": "Moment",
+		"unlocked_funds": "Balance"
+	},
+	"MetadataRecord": {
+		"address": "AccountId",
+		"superior": "Hash",
+		"creator": "AccountId",
+		"did": "Did",
+		"locked_records": "Option<LockedRecords<Balance, Moment>>",
+		"unlocked_records": "Option<UnlockedRecords<Balance, Moment>>",
+		"donate": "Option<Balance>",
+		"social_account": "Option<Hash>",
+		"subordinate_count": "u64",
+		"group_name": "Option<Vec<u8>>",
+		"external_address": "ExternalAddress"
+	},
+	"AdsLinkedItem": {
+		"prev": "Option<AdIndex>",
+		"next": "Option<AdIndex>"
+	},
+	"ActiveIndex": "u64",
+	"AdIndex": "u64",
+	"DistributeType": {
+		"_enum": ["ADVERTISER", "AGENT"]
+	},
+	"AdsMetadata": {
+		"advertiser": "Vec<u8>",
+		"topic": "Vec<u8>",
+		"total_amount": "Balance",
+		"spend_amount": "Balance",
+		"single_click_fee": "Balance",
+		"display_page": "Vec<u8>",
+		"landing_page": "Option<Vec<u8>>",
+		"create_time": "Moment",
+		"active": "Option<ActiveIndex>",
+		"distribute_type": "DistributeType"
+	},
+	"EventHTLC": {
+		"eth_contract_addr": "Vec<u8>",
+		"htlc_block_number": "BlockNumber",
+		"event_block_number": "BlockNumber",
+		"expire_height": "u32",
+		"random_number_hash": "Vec<u8>",
+		"swap_id": "Hash",
+		"sender_addr": "Vec<u8>",
+		"sender_chain_type": "HTLCChain",
+		"receiver_addr": "Hash",
+		"receiver_chain_type": "HTLCChain",
+		"recipient_addr": "Vec<u8>",
+		"out_amount": "Balance",
+		"event_type": "HTLCType"
+	},
+	"HTLCChain": {
+		"_enum": ["ETHMain", "PRM"]
+	},
+	"HTLCStates": {
+		"_enum": ["INVALID", "OPEN", "COMPLETED", "EXPIRED"]
+	},
+	"EventLogSource": {
+		"event_name": "Vec<u8>",
+		"event_url": "Vec<u8>",
+		"event_data": "Vec<u8>"
+	},
+	"HTLCType": {
+		"_enum": ["HTLC", "Claimed", "Refunded"]
+	},
+	"Erc20EventTransfer": {
 		"value": "Compact<Balance>",
 		"from": "Vec<u8>"
 	},
-	"Erc20EventWithdraw" :{
+	"Erc20EventWithdraw": {
 		"value": "Compact<Balance>",
 		"who": "Vec<u8>",
 		"status": "bool"
 	},
-	"Erc20EventRedeem" :{
+	"Erc20EventRedeem": {
 		"value": "Compact<Balance>",
 		"from": "Vec<u8>",
 		"to": "AccountId"
@@ -208,7 +194,9 @@ In different terminal tab.
 			"Withdraw": "Erc20EventWithdraw",
 			"Redeem": "Erc20EventRedeem"
 		}
-	}
+	},
+	"CommodityId": "Hash",
+	"CommodityInfo": "Vec<u8>"
 }
 ```
 
@@ -218,9 +206,9 @@ Welcome to the official, in-depth Parami guide to validating. We're happy that y
 
 This document contains all the information one should need to start validating on Parami using the polkadot-js/apps user interface. We will start with how to setup one's node and proceed to how to key management. To start, we will use the following terminology of keys for the guide:
 
-* stash - the stash keypair is where most of your funds should be located. It can be kept in cold storage if necessary.
-* controller - the controller is the keypair that will control your validator settings. It should have a smaller balance, e.g. 10-100 PRM
-* session - the 4 session keypairs are hot keys that are stored on your validator node. They do not need to have balances.
+-   stash - the stash keypair is where most of your funds should be located. It can be kept in cold storage if necessary.
+-   controller - the controller is the keypair that will control your validator settings. It should have a smaller balance, e.g. 10-100 PRM
+-   session - the 4 session keypairs are hot keys that are stored on your validator node. They do not need to have balances.
 
 ### Requirements
 
@@ -229,6 +217,7 @@ This document contains all the information one should need to start validating o
 3. You should have a wallet, such as the polkadot-js extension, installed in your browser with the stash and controller keypairs. If you don't have it, get it [here](https://github.com/polkadot-js/extension) .
 
 ### Create a stake
+
 Go to the Staking tab, and select Account actions at the top. Click on New stake.
 
 Select your controller and stash accounts. Enter how much of your stash balance you would like to stake. Leave a few PRM free, or you will be unable to send transactions from the account.
@@ -250,7 +239,11 @@ curl -H 'Content-Type: application/json' --data '{ "jsonrpc":"2.0", "method":"au
 The output should look like this:
 
 ```json
-{"jsonrpc":"2.0","result":"0x0ca0fbf245e4abca3328f8bba4a286d6cb1796516fcc68864cab580f175e6abd2b9107003014fc6baab7fd8caf4607b34222df62f606248a8a592bcba86ff9eec6e838ae8eb757eb77dffc748f1443e60c4f7617c9ea7905f0dd09ab758a8063","id":1}
+{
+	"jsonrpc": "2.0",
+	"result": "0x0ca0fbf245e4abca3328f8bba4a286d6cb1796516fcc68864cab580f175e6abd2b9107003014fc6baab7fd8caf4607b34222df62f606248a8a592bcba86ff9eec6e838ae8eb757eb77dffc748f1443e60c4f7617c9ea7905f0dd09ab758a8063",
+	"id": 1
+}
 ```
 
 Copy the hexadecimal key from inside the JSON object, and paste it into the web interface.
@@ -267,11 +260,12 @@ At the beginning of the next era, if there are open slots and your validator has
 
 Is your validator not producing blocks?
 
-* Check that it is part of the active validator set. You will need to wait until your validator rotates in. this may take longer depending on whether there are free slots.
-* Check that it is running with the --validator flag.
-* Ensure your session keys are set correctly. Use curl to rotate your session keys again, and then send another transaction to the network to set the new keys.
+-   Check that it is part of the active validator set. You will need to wait until your validator rotates in. this may take longer depending on whether there are free slots.
+-   Check that it is running with the --validator flag.
+-   Ensure your session keys are set correctly. Use curl to rotate your session keys again, and then send another transaction to the network to set the new keys.
 
 ### Stop validating
+
 If you would like to stop validating, you should use the Stop Validating button on your stake, to send a chill transaction. It will take effect when the next validator rotation happens, at which point you can shut down your validator.
 
 Once you have stopped validating, you can send a transaction to unbond your funds. You can then redeem your unbonded funds after the unbonding period has passed.
