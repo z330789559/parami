@@ -362,7 +362,7 @@ fn parami_genesis(
 ) -> GenesisConfig {
     let (initial_allocation, initial_total) = get_initial_allocation().unwrap();
 
-    const stash_amount: Balance = 10_000 * DOLLARS;
+    const STASH_AMOUNT: Balance = 10_000 * DOLLARS;
     let total_stash: Balance = 10_000 * initial_authorities.len() as u128 * DOLLARS;
     let endowed_amount: Balance = 70_000_000 * DOLLARS - initial_total - total_stash;
 
@@ -381,7 +381,7 @@ fn parami_genesis(
                 .chain(
                     initial_authorities
                         .iter()
-                        .map(|x| (x.0.clone(), stash_amount)),
+                        .map(|x| (x.0.clone(), STASH_AMOUNT)),
                 )
                 .chain(
                     initial_allocation
@@ -412,7 +412,7 @@ fn parami_genesis(
                     (
                         x.0.clone(),
                         x.1.clone(),
-                        stash_amount,
+                        STASH_AMOUNT,
                         StakerStatus::Validator,
                     )
                 })
@@ -427,7 +427,7 @@ fn parami_genesis(
                 .iter()
                 .take((num_endowed_accounts + 1) / 2)
                 .cloned()
-                .map(|member| (member, stash_amount))
+                .map(|member| (member, STASH_AMOUNT))
                 .collect(),
         }),
         pallet_collective_Instance1: Some(CouncilConfig::default()),

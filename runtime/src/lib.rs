@@ -41,7 +41,7 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureOneOf, EnsureRoot,
 };
-use pallet_contracts::WeightInfo;
+use pallet_contracts::weights::WeightInfo;
 use pallet_contracts_primitives::ContractExecResult;
 use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
@@ -97,7 +97,7 @@ pub mod constants;
 use constants::{currency::*, time::*};
 
 // mod oracle;
-//mod prices;
+// mod prices;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -113,7 +113,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     // implementation changes and behavior does not, then leave spec_version as
     // is and increment impl_version.
     spec_version: 253,
-    impl_version: 1,
+    impl_version: 2,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
 };
@@ -217,16 +217,9 @@ impl frame_system::Config for Runtime {
     type Header = generic::Header<BlockNumber, BlakeTwo256>;
     type Event = Event;
     type BlockHashCount = BlockHashCount;
-    // type MaximumBlockWeight = MaximumBlockWeight;
     type DbWeight = RocksDbWeight;
-    // type BlockExecutionWeight = BlockExecutionWeight;
-    // type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
-    // type MaximumExtrinsicWeight = MaximumExtrinsicWeight;
-    // type MaximumBlockLength = MaximumBlockLength;
-    // type AvailableBlockRatio = AvailableBlockRatio;
     type Version = Version;
     type PalletInfo = PalletInfo;
-    // type ModuleToIndex = ModuleToIndex;
     type AccountData = pallet_balances::AccountData<Balance>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
@@ -559,7 +552,6 @@ impl pallet_elections_phragmen::Config for Runtime {
     type VotingBondBase = VotingBondBase;
     type VotingBondFactor = VotingBondFactor;
     type LoserCandidate = Treasury;
-    // type BadReport = Treasury;
     type KickedMember = Treasury;
     type DesiredMembers = DesiredMembers;
     type DesiredRunnersUp = DesiredRunnersUp;
@@ -634,23 +626,12 @@ impl pallet_treasury::Config for Runtime {
         EnsureRoot<AccountId>,
         pallet_collective::EnsureMembers<_2, AccountId, CouncilCollective>,
     >;
-    // type Tippers = ElectionsPhragmen;
-    // type TipCountdown = TipCountdown;
-    // type TipFindersFee = TipFindersFee;
-    // type TipReportDepositBase = TipReportDepositBase;
-    // type DataDepositPerByte = DataDepositPerByte;
     type Event = Event;
     type OnSlash = ();
     type ProposalBond = ProposalBond;
     type ProposalBondMinimum = ProposalBondMinimum;
     type SpendPeriod = SpendPeriod;
     type Burn = Burn;
-    // type BountyDepositBase = BountyDepositBase;
-    // type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
-    // type BountyUpdatePeriod = BountyUpdatePeriod;
-    // type BountyCuratorDeposit = BountyCuratorDeposit;
-    // type BountyValueMinimum = BountyValueMinimum;
-    // type MaximumReasonLength = MaximumReasonLength;
     type BurnDestination = ();
     type SpendFunds = Bounties;
     type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
@@ -689,6 +670,7 @@ parameter_types! {
         <Runtime as pallet_contracts::Config>::WeightInfo::on_initialize_per_queue_item(1) -
         <Runtime as pallet_contracts::Config>::WeightInfo::on_initialize_per_queue_item(0)
     )) / 5) as u32;
+    pub MaxCodeSize: u32 = 128 * 1024;
 }
 
 impl pallet_contracts::Config for Runtime {
@@ -711,6 +693,7 @@ impl pallet_contracts::Config for Runtime {
     type ChainExtension = ();
     type DeletionQueueDepth = DeletionQueueDepth;
     type DeletionWeightLimit = DeletionWeightLimit;
+    type MaxCodeSize = MaxCodeSize;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -831,11 +814,6 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-    pub const WindowSize: BlockNumber = 101;
-    pub const ReportLatency: BlockNumber = 1000;
-}
-
-parameter_types! {
     pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
     pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
     pub const SubAccountDeposit: Balance = 2 * DOLLARS;   // 53 bytes on-chain
@@ -859,16 +837,7 @@ impl pallet_identity::Config for Runtime {
     type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-    pub const CandidateDeposit: Balance = 10 * DOLLARS;
-    pub const WrongSideDeduction: Balance = 2 * DOLLARS;
-    pub const MaxStrikes: u32 = 10;
-    pub const RotationPeriod: BlockNumber = 80 * HOURS;
-    pub const PeriodSpend: Balance = 500 * DOLLARS;
-    pub const MaxLockDuration: BlockNumber = 36 * 30 * DAYS;
-    pub const ChallengePeriod: BlockNumber = 7 * DAYS;
-}
-
+/*** beigin Parami Types ***/
 impl did::Config for Runtime {
     type Event = Event;
 }
@@ -882,7 +851,6 @@ impl parami_bridge::Config for Runtime {
     type Currency = Balances;
 }
 
-/*** Parami NFT ***/
 parameter_types! {
     pub const MaxNFT: u128 = 2^64;
     pub const MaxNFTPerUser: u64 = 256;
@@ -895,8 +863,6 @@ impl parami_nft::Config for Runtime {
     type UserCommodityLimit = MaxNFTPerUser;
     type Event = Event;
 }
-/*** Parami NFT ***/
-
 // use oracle::sr25519::AuthorityId as OracleId;
 // We need to define the Transaction signer for that using the Key definition
 // type SubmitTransactionOracle = TransactionSubmitter<OracleId, Runtime, UncheckedExtrinsic>;
@@ -906,6 +872,8 @@ impl parami_nft::Config for Runtime {
 // 	type Event = Event;
 // 	type Call = Call;
 // }
+
+/*** end Parami types ***/
 
 construct_runtime!(
     pub enum Runtime where
