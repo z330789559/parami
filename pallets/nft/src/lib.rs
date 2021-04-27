@@ -42,7 +42,7 @@ use frame_support::{
     traits::{EnsureOrigin, Get},
     Hashable,
 };
-use frame_system::ensure_signed;
+use frame_system::{ensure_root, ensure_signed};
 use sp_runtime::traits::{Hash, Member};
 use sp_std::{cmp::Eq, fmt::Debug, vec::Vec};
 
@@ -154,7 +154,8 @@ decl_module! {
         /// - `commodity_info`: The information that defines the commodity.
         #[weight = 10_000]
         pub fn mint(origin, owner_account: T::AccountId, commodity_info: T::CommodityInfo) -> dispatch::DispatchResult {
-            T::CommodityAdmin::ensure_origin(origin)?;
+            //T::CommodityAdmin::ensure_origin(origin)?;
+            //ensure_root(origin)?;
 
             let commodity_id = <Self as UniqueAssets<_>>::mint(&owner_account, commodity_info)?;
             Self::deposit_event(RawEvent::Minted(commodity_id, owner_account.clone()));

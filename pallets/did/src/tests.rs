@@ -74,7 +74,7 @@ parameter_types! {
   pub const ExistentialDeposit: u64 = 1;
 }
 
-impl pallet_balances::Trait for Test {
+impl pallet_balances::Config for Test {
     type Balance = u64;
     type Event = TestEvent;
     type DustRemoval = ();
@@ -86,7 +86,7 @@ parameter_types! {
   pub const MinimumPeriod: u64 = 1;
 }
 
-impl pallet_timestamp::Trait for Test {
+impl pallet_timestamp::Config for Test {
     type Moment = u64;
     type OnTimestampSet = ();
     type MinimumPeriod = MinimumPeriod;
@@ -99,7 +99,7 @@ parameter_types! {
   pub const One: u64 = 1;
 }
 
-impl Trait for Test {
+impl Config for Test {
     type Event = TestEvent;
 }
 

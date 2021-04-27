@@ -52,7 +52,8 @@ pub use pallet_transaction_payment::{
 };
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 pub use parami_node_primitives::{AccountId, Signature};
-use parami_node_primitives::{AccountIndex, Balance, BlockNumber, Hash, Index, Moment};
+use parami_node_primitives::{AccountIndex, Balance, BlockNumber, Index, Moment};
+use parami_node_primitives as primitives;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
@@ -208,13 +209,13 @@ impl frame_system::Config for Runtime {
     type BlockLength = RuntimeBlockLength;
     type Origin = Origin;
     type Call = Call;
-    type Index = Index;
-    type BlockNumber = BlockNumber;
-    type Hash = Hash;
+    type Index = primitives::Index;
+    type BlockNumber = primitives::BlockNumber;
+    type Hash = primitives::Hash;
     type Hashing = BlakeTwo256;
-    type AccountId = AccountId;
+    type AccountId = primitives::AccountId;
     type Lookup = Indices;
-    type Header = generic::Header<BlockNumber, BlakeTwo256>;
+    type Header = primitives::Header;
     type Event = Event;
     type BlockHashCount = BlockHashCount;
     type DbWeight = RocksDbWeight;
@@ -715,8 +716,8 @@ where
     fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
         call: Call,
         public: <Signature as traits::Verify>::Signer,
-        account: AccountId,
-        nonce: Index,
+        account: primitives::AccountId,
+        nonce: primitives::Index,
     ) -> Option<(
         Call,
         <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload,
@@ -878,7 +879,7 @@ impl parami_nft::Config for Runtime {
 construct_runtime!(
     pub enum Runtime where
         Block = Block,
-        NodeBlock = parami_node_primitives::Block,
+        NodeBlock = primitives::Block,
         UncheckedExtrinsic = UncheckedExtrinsic
     {
         System: frame_system::{Module, Call, Config, Storage, Event<T>},
