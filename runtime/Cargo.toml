@@ -14,10 +14,9 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 # third-party dependencies
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-integer-sqrt = { version = "0.1.2" }
 serde = { version = "1.0.102", features = ["derive"], optional = true }
 hex = { version = "0.4.0", default-features = false }
-num-bigint-dig = { version = "0.6.0", default-features = false}
+num-bigint-dig = { version = "0.7.0", default-features = false}
 num-traits = { version = "0.2.4", default-features = false}
 static_assertions = "1.1.0"
 
@@ -87,10 +86,10 @@ parami-nft = { package = "parami-nft", path = "../pallets/nft", default-features
 #utilities = { path = "../pallets/utilities", default-features = false }
 
 [build-dependencies]
-substrate-wasm-builder = '3.0.0'
+substrate-wasm-builder = '4.0.0'
 
 [dev-dependencies]
-#sp-io = { version = "3.0.0" }
+#sp-io = "3.0.0"
 
 [features]
 default = ["std"]
