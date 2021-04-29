@@ -82,8 +82,6 @@ did = { path = "../pallets/did", default-features = false }
 ads = { path = "../pallets/ads", default-features = false }
 parami-bridge = { package = "parami-bridge", path = "../pallets/bridge", default-features = false }
 parami-nft = { package = "parami-nft", path = "../pallets/nft", default-features = false }
-#prices = { path = "../pallets/prices", default-features = false }
-#utilities = { path = "../pallets/utilities", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = '4.0.0'
