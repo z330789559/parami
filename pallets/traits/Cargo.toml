@@ -1,0 +1,32 @@
+[package]
+name = "pallet-traits"
+description = "Shared traits including `BasicCurrency`, `MultiCurrency`, `Auction` and more."
+license = "Apache-2.0"
+version = "0.4.1-dev"
+authors = ["parami Developers <baozhongmail@yeah.net>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.124", optional = true }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+sp-std = { version = "3.0.0", default-features = false, path = "../../substrate/primitives/std" }
+sp-runtime = { version = "3.0.0", default-features = false, path = "../../substrate/primitives/runtime" }
+sp-io = { version = "3.0.0", path = "../../substrate/primitives/io", default-features = false }
+num-traits = { version = "0.2.14", default-features = false }
+impl-trait-for-tuples = "0.2.1"
+frame-support = { version = "3.0.0", default-features = false, path = "../../substrate/frame/support" }
+xcm = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-runtime/std",
+	"sp-io/std",
+	"sp-std/std",
+	"num-traits/std",
+	"frame-support/std",
+	"orml-utilities/std",
+	"xcm/std",
+]
