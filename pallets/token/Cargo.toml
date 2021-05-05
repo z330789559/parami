@@ -1,0 +1,41 @@
+[package]
+name = "parami-tokens"
+description = "Fungible tokens module that implements `MultiCurrency` trait."
+license = "Apache-2.0"
+version = "0.4.1-dev"
+authors = ["parami Developers <baozhongmail@yeah.net>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.124", optional = true }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+pallet-traits = { path = "../traits", version = "0.4.1-dev", default-features = false }
+
+sp-core = { version = "3.0.0", default-features = false, path = "../../substrate/primitives/core" }
+sp-std = { version = "3.0.0", default-features = false, path = "../../substrate/primitives/std" }
+sp-runtime = { version = "3.0.0", default-features = false, path = "../../substrate/primitives/runtime" }
+frame-support = { version = "3.0.0", default-features = false, path = "../../substrate/frame/support" }
+frame-system = { version = "3.0.0", default-features = false, path = "../../substrate/frame/system" }
+
+[dev-dependencies]
+sp-io = { version = "3.0.0", path = "../../substrate/primitives/io", default-features = false }
+pallet-treasury ={ version = "3.0.0", path = "../../substrate/frame/treasury", default-features = false }
+# Patch doesn't work as `pallet-elections-phragmen` is now 4.0.0 version. Revert `rev` to `rococo-v1` branch after
+# other `rococo-v1` dependencies upgraded.
+pallet-elections-phragmen = { version = "3.0.0", path = "../../substrate/frame/elections-phragmen", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"frame-support/std",
+	"frame-system/std",
+	"orml-traits/std",
+]
+runtime-benchmarks = [
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+]
