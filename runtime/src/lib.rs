@@ -58,6 +58,7 @@ use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
     crypto::KeyTypeId,
+    TypeId,
     u32_trait::{_1, _2, _3, _4},
     OpaqueMetadata,
 };
@@ -71,8 +72,9 @@ use sp_runtime::transaction_validity::{
     TransactionPriority, TransactionSource, TransactionValidity,
 };
 use sp_runtime::{
+    AccountId32,
     create_runtime_str, generic, impl_opaque_keys, ApplyExtrinsicResult, FixedPointNumber,
-    ModuleId, PerThing, Perbill, Percent, Permill, Perquintill,
+    ModuleId, PerThing, Perbill, Percent, Permill, Perquintill
 };
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
@@ -88,7 +90,7 @@ pub use pallet_staking::StakerStatus;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-
+use parami_tokens::{TransferDust,PalletId};
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
 use impls::Author;
@@ -99,7 +101,6 @@ use constants::{currency::*, time::*};
 
 // mod oracle;
 // mod prices;
-
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -226,6 +227,39 @@ impl frame_system::Config for Runtime {
     type OnKilledAccount = ();
     type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
     type SS58Prefix = SS58Prefix;
+}
+
+pub type CurrencyId = u32;
+
+parameter_types! {
+ 
+     pub DustAccount: AccountId32 =AccountId32::new([1u8;32]);
+  
+}
+pub const DOT: CurrencyId = 1;
+pub const BTC: CurrencyId = 2;
+pub const ETH: CurrencyId = 3;
+
+parami_traits::parameter_type_with_key! {
+    pub ExistentialDeposits: |currency_id: CurrencyId| -> u64 {
+        match currency_id {
+            &BTC => 0,
+            &DOT => 0,
+            _ => 0,
+        }
+    };
+}
+
+
+
+impl parami_tokens::Config for Runtime {
+    type Event = Event;
+    type Balance = u64;
+    type Amount = i64;
+    type CurrencyId = CurrencyId;
+    type WeightInfo = ();
+    type ExistentialDeposits = ExistentialDeposits;
+    type OnDust = TransferDust<Runtime, DustAccount>;
 }
 
 parameter_types! {
@@ -914,6 +948,7 @@ construct_runtime!(
         Ads: ads::{Module, Storage, Call, Config<T>, Event<T>},
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
         Nft: parami_nft::{Module, Storage, Call, Config<T>, Event<T>},
+        Tokens: parami_tokens::{Module, Storage, Call,Event<T>, Config<T>},
 
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
