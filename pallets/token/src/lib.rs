@@ -78,6 +78,7 @@ pub use module::*;
 
 const tokenAccountId: AccountId32 = AccountId32::new([1u8; 32]);
 
+
 pub struct TransferDust<T, GetAccountId>(marker::PhantomData<(T, GetAccountId)>);
 impl<T, GetAccountId> OnDust<T::AccountId, T::CurrencyId, T::Balance> for TransferDust<T, GetAccountId>
 where
@@ -133,6 +134,35 @@ pub struct AccountData<Balance> {
 	/// The amount that `free` may not drop below when withdrawing.
 	pub frozen: Balance,
 }
+
+
+
+/// balance information for an account.
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
+pub struct TokenData<AccountId,CurrencyId> {
+	/// Non-reserved part of the balance. There may still be restrictions on
+	/// this, but it is the total pool what may in principle be transferred,
+	/// reserved.
+	///
+	/// This is the only balance that matters in terms of most operations on
+	/// tokens.
+	pub currencyId: CurrencyId,
+	/// Balance which is reserved and may not be used at all.
+	///
+	/// This can still get slashed, but gets slashed last of all.
+	///
+	/// This balance is a 'reserve' balance that other subsystems use in
+	/// order to set aside tokens that are still 'owned' by the account
+	/// holder, but which are suspendable.
+	pub accountId: AccountId,
+	/// The amount that `free` may not drop below when withdrawing.
+	pub synmbol: Vec<u8>,
+      
+	pub bigDecimal: u32,
+}
+
+
+
 
 impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
 	/// The amount that this account's free balance may not be reduced
@@ -208,6 +238,35 @@ impl<T: Encode + Decode + Default> AccountIdConversion<T> for PalletId {
 	}
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum DefaulCurrency{
+	DOT=1,
+	BTC=2,
+	ETH=3,
+	UNKOWN=4
+
+}
+impl DefaulCurrency{
+	pub fn getTokenInfo(&self)->Option<(Vec<u8>,u32,u32)>{
+         match &self{
+               DOT => Some(("DOT".as_bytes().to_vec(),1,18)),
+			   BTC=>  Some(("BTC".as_bytes().to_vec(),2,18)),
+			   ETH => Some(("ETH".as_bytes().to_vec(),3,18)),
+			   _ => None
+		 }
+	}
+
+	pub fn getDefaultToken<T>(index : T)->Self where T: Into<u32>{
+		match index.into() {
+			1u32 => DefaulCurrency::DOT,
+			2u32 => DefaulCurrency::BTC,
+			3u32 => DefaulCurrency::ETH,
+			_ => DefaulCurrency::UNKOWN
+		}
+        
+	} 
+}
+
 
 
 pub use module::*;
@@ -219,7 +278,9 @@ pub mod module {
 	pub trait WeightInfo {
 		fn transfer() -> Weight;
 		fn transfer_all() -> Weight;
+		fn publish_token() -> Weight;
 	}
+
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -240,7 +301,7 @@ pub mod module {
 			+ MaybeSerializeDeserialize;
 
 		/// The currency ID type
-		type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord;
+		type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + Default + Into<u32>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -276,12 +337,26 @@ pub mod module {
 		/// ExistentialDeposit, resulting in an outright loss. \[account,
 		/// currency_id, amount\]
 		DustLost(T::AccountId, T::CurrencyId, T::Balance),
+         ///发布新的资产
+		Publish(T::CurrencyId)
 	}
 
 	/// The total issuance of a token type.
 	#[pallet::storage]
 	#[pallet::getter(fn total_issuance)]
 	pub type TotalIssuance<T: Config> = StorageMap<_, Twox64Concat, T::CurrencyId, T::Balance, ValueQuery>;
+
+
+	/// The total issuance of a token type.
+	#[pallet::storage]
+	#[pallet::getter(fn token_info)]
+	pub type TokenInfo<T: Config> = StorageMap<_, Twox64Concat, Vec<u8>, TokenData<T::AccountId,T::CurrencyId>, ValueQuery>;
+
+
+	/// The currentId of this next token.
+	#[pallet::storage]
+	#[pallet::getter(fn next_id)]
+	pub type nextId<T: Config> = StorageValue<_, T::CurrencyId, ValueQuery>;
 
 	/// Any liquidity locks of a token type under an account.
 	/// NOTE: Should only be accessed when setting, changing and freeing a lock.
@@ -358,7 +433,20 @@ pub mod module {
 							.checked_add(initial_balance)
 							.expect("total issuance cannot overflow when building genesis")
 					});
+					if DefaulCurrency::UNKOWN != DefaulCurrency::getDefaultToken(*currency_id){
+					    DefaulCurrency::getDefaultToken(*currency_id).getTokenInfo().map(|(ref symbol,index, bigDecimal)|{
+							TokenInfo::<T>::insert(symbol, TokenData{
+								currencyId:  *currency_id,
+								accountId: account_id.clone(),
+								synmbol: symbol.clone(),
+								bigDecimal: bigDecimal
+							})
+						});
+					}
+
 				});
+
+			
 		}
 	}
 
@@ -370,6 +458,22 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+
+
+		#[pallet::weight(T::WeightInfo::publish_token())]
+		pub fn publish(	origin: OriginFor<T>, currency_id: T::CurrencyId, symbol: Vec<u8>, bigDecimal: u32)-> DispatchResultWithPostInfo {
+              
+			let from = ensure_signed(origin)?;
+			ensure!(TokenInfo::<T>::contains_key(&symbol),"asset symbol repeat");
+			TokenInfo::<T>::insert(&symbol, TokenData{
+				currencyId:  currency_id,
+				accountId: from,
+				synmbol: symbol.clone(),
+				bigDecimal: bigDecimal
+			});
+			Self::deposit_event(Event::Publish(currency_id));
+			Ok(().into())
+		}
 		/// Transfer some balance to another account.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
