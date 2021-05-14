@@ -7,28 +7,32 @@ authors = ["parami Developers <baozhongmail@yeah.net>"]
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.102",  optional = true }
+serde = { version = "1.0.101",  default-features = false, features = ["derive"], optional = true}
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-sp-io = { version = "3.0.0", default-features = false }
+#sp-io = { version = "3.0.0", default-features = false }
 num-traits = { version = "0.2.14", default-features = false }
 impl-trait-for-tuples = "0.2.1"
 
 sp-core = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 sp-runtime = { version = "3.0.0", default-features = false }
-
+getrandom = { version = "0.2.2", features = ["js"] , optional = true}
 # frame dependencies
 frame-support = { version = "3.0.0", default-features = false }
 frame-system = { version = "3.0.0", default-features = false }
+
+[dev-dependencies]
+sp-io = "3.0.0"
 
 [features]
 default = ["std"]
 std = [
 	"codec/std",
 	"sp-std/std",
+	"sp-core/std",
 	"sp-runtime/std",
-	"num-traits/std",
 	"frame-support/std",
-		"serde",
+	"getrandom/std",
+	"serde/std",
 
 ]

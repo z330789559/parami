@@ -1,7 +1,7 @@
 use crate::arithmetic;
 use codec::{Codec, FullCodec};
 pub use frame_support::{
-	traits::{BalanceStatus, LockIdentifier},
+	traits::{BalanceStatus, Currency,LockIdentifier},
 	transactional,
 };
 use sp_runtime::{
@@ -13,15 +13,31 @@ use sp_std::{
 	convert::{TryFrom, TryInto},
 	fmt::Debug,
 	result,
+	prelude::Vec
 };
 
+use crate::TokenResult;
+
+
+pub trait CurrencyId :AtLeast32BitUnsigned + FullCodec + Eq + PartialEq + Copy + MaybeSerializeDeserialize + Debug + Default + Into<u32>  {}
+pub trait Balance: AtLeast32BitUnsigned + FullCodec + Copy + MaybeSerializeDeserialize + Debug + Default + From<u128> + From<u64> {}
+
+impl Balance for u128{
+
+}
+
+impl CurrencyId for u32{
+
+}
 /// Abstraction over a fungible multi-currency system.
 pub trait MultiCurrency<AccountId> {
 	/// The currency identifier.
-	type CurrencyId: FullCodec + Eq + PartialEq + Copy + MaybeSerializeDeserialize + Debug;
+	type CurrencyId: CurrencyId;
 
 	/// The balance of an account.
-	type Balance: AtLeast32BitUnsigned + FullCodec + Copy + MaybeSerializeDeserialize + Debug + Default;
+	type Balance: Balance;
+
+      fn create_token(who: &AccountId, total_supply: Self::Balance, system_symbol: &Vec<u8>,big_Decimal: u32)->TokenResult<Self::CurrencyId>;
 
 	// Public immutables
 

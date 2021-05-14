@@ -37,6 +37,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
+
+
 pub use crate::imbalances::{NegativeImbalance, PositiveImbalance};
 
 use frame_support::{
@@ -49,18 +51,21 @@ use frame_support::{
 	},
 	transactional,
 };
-use codec::{Encode, Decode, HasCompact};
+use codec::{Encode, Decode,EncodeLike, HasCompact};
 use frame_system::{self as system, ensure_signed, pallet_prelude::*};
-use pallet_traits::{
+use parami_traits::{
+	TokenResult,TokenError, CurrencyId, Balance, PalletId,
 	arithmetic::{self, Signed},
 	currency::TransferAll,
-	BalanceStatus, GetByKey, LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
+	BalanceStatus, GetByKey, LockIdentifier, MultiCurrency,MultiCurrencyExtended, MultiLockableCurrency,
 	MultiReservableCurrency, OnDust,
 };
+
+
 use sp_runtime::{
 	traits::{
 		AccountIdConversion, AtLeast32BitUnsigned, Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member,
-		Saturating, StaticLookup, Zero,
+		Saturating, StaticLookup, Zero,One,Printable
 	},
 	DispatchError, DispatchResult, RuntimeDebug,TypeId,AccountId32
 };
@@ -70,6 +75,7 @@ use sp_std::{
 	prelude::*,
 	vec::Vec,
 };
+
 mod default_weight;
 mod imbalances;
 // mod tests;
@@ -100,6 +106,8 @@ impl<T: Config> OnDust<T::AccountId, T::CurrencyId, T::Balance> for BurnDust<T> 
 		let _ = Pallet::<T>::withdraw(currency_id, who, amount);
 	}
 }
+
+
 
 /// A single lock on a balance. There can be many of these on an account and
 /// they "overlap", so the same balance is frozen by multiple locks.
@@ -136,7 +144,6 @@ pub struct AccountData<Balance> {
 }
 
 
-
 /// balance information for an account.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
 pub struct TokenData<AccountId,CurrencyId> {
@@ -156,15 +163,15 @@ pub struct TokenData<AccountId,CurrencyId> {
 	/// holder, but which are suspendable.
 	pub accountId: AccountId,
 	/// The amount that `free` may not drop below when withdrawing.
-	pub synmbol: Vec<u8>,
-      
+	pub symbol: Vec<u8>,
+
 	pub bigDecimal: u32,
 }
 
 
 
 
-impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
+impl<Balance: Saturating + Copy + Ord + From<u64>> AccountData<Balance> {
 	/// The amount that this account's free balance may not be reduced
 	/// beyond.
 	pub(crate) fn frozen(&self) -> Balance {
@@ -177,66 +184,6 @@ impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
 	}
 }
 
-/// A pallet identifier. These are per pallet and should be stored in a registry somewhere.
-#[derive(Clone, Copy, Eq, PartialEq, Encode, Decode)]
-pub struct PalletId(pub [u8; 8]);
-
-trait LocalTypeId{
-	const TYPE_ID:[u8; 4];
-}
-impl LocalTypeId for PalletId {
-	const TYPE_ID: [u8; 4] = *b"modl";
-}
-
-/// Input that adds infinite number of zero after wrapped input.
-pub struct TrailingZeroInput<'a>(&'a [u8]);
-
-impl<'a> TrailingZeroInput<'a> {
-	/// Create a new instance from the given byte array.
-	pub fn new(data: &'a [u8]) -> Self {
-		Self(data)
-	}
-}
-
-impl<'a> codec::Input for TrailingZeroInput<'a> {
-	fn remaining_len(&mut self) -> Result<Option<usize>, codec::Error> {
-		Ok(None)
-	}
-
-	fn read(&mut self, into: &mut [u8]) -> Result<(), codec::Error> {
-		let len_from_inner = into.len().min(self.0.len());
-		into[..len_from_inner].copy_from_slice(&self.0[..len_from_inner]);
-		for i in &mut into[len_from_inner..] {
-			*i = 0;
-		}
-		self.0 = &self.0[len_from_inner..];
-
-		Ok(())
-	}
-}
-
-/// Format is TYPE_ID ++ encode(parachain ID) ++ 00.... where 00... is indefinite trailing zeroes to
-/// fill AccountId.
-impl<T: Encode + Decode + Default> AccountIdConversion<T> for PalletId {
-	fn into_sub_account<S: Encode>(&self, sub: S) -> T {
-		(<PalletId as LocalTypeId >::TYPE_ID, self, sub).using_encoded(|b|
-			T::decode(&mut TrailingZeroInput(b))
-		).unwrap_or_default()
-	}
-
-	fn try_from_sub_account<S: Decode>(x: &T) -> Option<(Self, S)> {
-		x.using_encoded(|d| {
-			if &d[0..4] != <PalletId as LocalTypeId >::TYPE_ID { return None }
-			let mut cursor = &d[4..];
-			let result = Decode::decode(&mut cursor).ok()?;
-			if cursor.iter().all(|x| *x == 0) {
-				Some(result)
-			} else {
-				None
-			}
-		})
-	}
-}
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum DefaulCurrency{
@@ -263,13 +210,13 @@ impl DefaulCurrency{
 			3u32 => DefaulCurrency::ETH,
 			_ => DefaulCurrency::UNKOWN
 		}
-        
-	} 
+
+	}
 }
 
 
 
-pub use module::*;
+
 
 #[frame_support::pallet]
 pub mod module {
@@ -279,6 +226,7 @@ pub mod module {
 		fn transfer() -> Weight;
 		fn transfer_all() -> Weight;
 		fn publish_token() -> Weight;
+		fn default_weight() -> Weight;
 	}
 
 
@@ -286,8 +234,11 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// The balance type
-		type Balance: Parameter + Member + AtLeast32BitUnsigned + Default + Copy + MaybeSerializeDeserialize;
+	/// The currency identifier.
+	type CurrencyId: CurrencyId;
+
+	/// The balance of an account.
+	type Balance: Balance;
 
 		/// The amount type, should be signed version of `Balance`
 		type Amount: Signed
@@ -299,9 +250,6 @@ pub mod module {
 			+ Default
 			+ Copy
 			+ MaybeSerializeDeserialize;
-
-		/// The currency ID type
-		type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + Default + Into<u32>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -356,7 +304,7 @@ pub mod module {
 	/// The currentId of this next token.
 	#[pallet::storage]
 	#[pallet::getter(fn next_id)]
-	pub type nextId<T: Config> = StorageValue<_, T::CurrencyId, ValueQuery>;
+	pub type NextId<T: Config> = StorageValue<_, T::CurrencyId, ValueQuery>;
 
 	/// Any liquidity locks of a token type under an account.
 	/// NOTE: Should only be accessed when setting, changing and freeing a lock.
@@ -438,7 +386,7 @@ pub mod module {
 							TokenInfo::<T>::insert(symbol, TokenData{
 								currencyId:  *currency_id,
 								accountId: account_id.clone(),
-								synmbol: symbol.clone(),
+								symbol: symbol.clone(),
 								bigDecimal: bigDecimal
 							})
 						});
@@ -446,7 +394,7 @@ pub mod module {
 
 				});
 
-			
+
 		}
 	}
 
@@ -462,13 +410,13 @@ pub mod module {
 
 		#[pallet::weight(T::WeightInfo::publish_token())]
 		pub fn publish(	origin: OriginFor<T>, currency_id: T::CurrencyId, symbol: Vec<u8>, bigDecimal: u32)-> DispatchResultWithPostInfo {
-              
+
 			let from = ensure_signed(origin)?;
 			ensure!(TokenInfo::<T>::contains_key(&symbol),"asset symbol repeat");
 			TokenInfo::<T>::insert(&symbol, TokenData{
 				currencyId:  currency_id,
 				accountId: from,
-				synmbol: symbol.clone(),
+				symbol: symbol.clone(),
 				bigDecimal: bigDecimal
 			});
 			Self::deposit_event(Event::Publish(currency_id));
@@ -479,7 +427,7 @@ pub mod module {
 		/// The dispatch origin for this call must be `Signed` by the
 		/// transactor.
 		#[pallet::weight(T::WeightInfo::transfer())]
-		pub fn transfer(
+		pub fn out_transfer(
 			origin: OriginFor<T>,
 			dest: <T::Lookup as StaticLookup>::Source,
 			currency_id: T::CurrencyId,
@@ -515,6 +463,8 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
+
+
 	/// Check whether account_id is a module account
 	pub(crate) fn is_module_account_id(account_id: &T::AccountId) -> bool {
 		PalletId::try_from_account(account_id).is_some()
@@ -639,6 +589,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	type CurrencyId = T::CurrencyId;
 	type Balance = T::Balance;
 
+	fn create_token(who: &T::AccountId, total_supply: T::Balance, system_symbol: &Vec<u8>,bigDecimal: u32)->TokenResult<T::CurrencyId>		{
+				Pallet::<T>::create_token(who, total_supply,system_symbol,bigDecimal)
+	}
+
+
 	fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
 		T::ExistentialDeposits::get(&currency_id)
 	}
@@ -648,7 +603,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	}
 
 	fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
-		Self::accounts(who, currency_id).total()
+		 Self::accounts(who, currency_id).total()
+
 	}
 
 	fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
@@ -984,14 +940,13 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 
 pub struct CurrencyAdapter<T, GetCurrencyId>(marker::PhantomData<(T, GetCurrencyId)>);
 
-impl<T, GetCurrencyId> PalletCurrency<T::AccountId> for CurrencyAdapter<T, GetCurrencyId>
-where
-	T: Config,
-	GetCurrencyId: Get<T::CurrencyId>,
-{
+
+
+impl<T, GetCurrencyId> PalletCurrency<T::AccountId> for CurrencyAdapter<T, GetCurrencyId> where T: Config, GetCurrencyId: Get<T::CurrencyId>{
 	type Balance = T::Balance;
 	type PositiveImbalance = PositiveImbalance<T, GetCurrencyId>;
 	type NegativeImbalance = NegativeImbalance<T, GetCurrencyId>;
+
 
 	fn total_balance(who: &T::AccountId) -> Self::Balance {
 		Pallet::<T>::total_balance(GetCurrencyId::get(), who)
@@ -1154,11 +1109,7 @@ where
 	}
 }
 
-impl<T, GetCurrencyId> PalletReservableCurrency<T::AccountId> for CurrencyAdapter<T, GetCurrencyId>
-where
-	T: Config,
-	GetCurrencyId: Get<T::CurrencyId>,
-{
+impl<T, GetCurrencyId> PalletReservableCurrency<T::AccountId> for CurrencyAdapter<T, GetCurrencyId> where T: Config, GetCurrencyId: Get<T::CurrencyId>, {
 	fn can_reserve(who: &T::AccountId, value: Self::Balance) -> bool {
 		Pallet::<T>::can_reserve(GetCurrencyId::get(), who, value)
 	}

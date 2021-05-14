@@ -23,7 +23,8 @@
 #![recursion_limit = "256"]
 
 use sp_std::prelude::*;
-
+#[macro_use]
+extern crate alloc;
 use codec::Encode;
 use frame_support::traits::Filter;
 use frame_support::{
@@ -90,7 +91,7 @@ pub use pallet_staking::StakerStatus;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use parami_tokens::{TransferDust,PalletId};
+use parami_tokens::{TransferDust};
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
 use impls::Author;
@@ -99,6 +100,8 @@ use impls::Author;
 pub mod constants;
 use constants::{currency::*, time::*};
 
+
+use parami_traits::{Balance as ParamiBalance ,CurrencyId};
 // mod oracle;
 // mod prices;
 // Make the WASM binary available.
@@ -229,19 +232,18 @@ impl frame_system::Config for Runtime {
     type SS58Prefix = SS58Prefix;
 }
 
-pub type CurrencyId = u32;
 
 parameter_types! {
- 
+
      pub DustAccount: AccountId32 =AccountId32::new([1u8;32]);
-  
+
 }
-pub const DOT: CurrencyId = 1;
-pub const BTC: CurrencyId = 2;
-pub const ETH: CurrencyId = 3;
+pub const DOT: Index = 1;
+pub const BTC: Index = 2;
+pub const ETH: Index = 3;
 
 parami_traits::parameter_type_with_key! {
-    pub ExistentialDeposits: |currency_id: CurrencyId| -> u64 {
+    pub ExistentialDeposits: |currency_id: Index| -> u128 {
         match currency_id {
             &BTC => 0,
             &DOT => 0,
@@ -254,13 +256,19 @@ parami_traits::parameter_type_with_key! {
 
 impl parami_tokens::Config for Runtime {
     type Event = Event;
-    type Balance = u64;
+    type Balance = Balance;
     type Amount = i64;
-    type CurrencyId = CurrencyId;
+    type CurrencyId = Index;
     type WeightInfo = ();
     type ExistentialDeposits = ExistentialDeposits;
     type OnDust = TransferDust<Runtime, DustAccount>;
 }
+
+//
+// impl parami_swap::Config for Runtime{
+//    type Currency = Balances;
+// 	type Tokens =Tokens;
+// }
 
 parameter_types! {
     pub const MaximumWeight: Weight = 2_000_000;
@@ -949,7 +957,7 @@ construct_runtime!(
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
         Nft: parami_nft::{Module, Storage, Call, Config<T>, Event<T>},
         Tokens: parami_tokens::{Module, Storage, Call,Event<T>, Config<T>},
-
+		// Swap: parami_swap::{Module, Storage, Call,Event<T>, Config<T>},
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
     }

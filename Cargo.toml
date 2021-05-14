@@ -11,6 +11,8 @@ members = [
 	"pallets/ads",
 	"pallets/bridge",
     "pallets/nft",
+	"pallets/token",
+	"pallets/swap",
 	"runtime",
 ]
 
