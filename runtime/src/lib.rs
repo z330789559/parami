@@ -264,11 +264,12 @@ impl parami_tokens::Config for Runtime {
     type OnDust = TransferDust<Runtime, DustAccount>;
 }
 
-//
-// impl parami_swap::Config for Runtime{
-//    type Currency = Balances;
-// 	type Tokens =Tokens;
-// }
+
+impl parami_swap::Config for Runtime{
+	type Event = Event;
+   type Currency = Balances;
+	type Tokens =Tokens;
+}
 
 parameter_types! {
     pub const MaximumWeight: Weight = 2_000_000;
@@ -957,7 +958,7 @@ construct_runtime!(
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
         Nft: parami_nft::{Module, Storage, Call, Config<T>, Event<T>},
         Tokens: parami_tokens::{Module, Storage, Call,Event<T>, Config<T>},
-		// Swap: parami_swap::{Module, Storage, Call,Event<T>, Config<T>},
+		Swap: parami_swap::{Module, Storage, Call,Event<T>, Config<T>},
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
     }

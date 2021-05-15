@@ -6,7 +6,7 @@ authors = ["parami Developers <baozhongmail@yeah.net>"]
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.101",  default-features = false, features = ["derive"], optional = true}
+serde = { version = "1.0.102", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 parami-traits = {  package="traits",   path = "../traits",  default-features = false }
 
@@ -26,7 +26,7 @@ getrandom = { version = "0.2.2", features = ["js"], optional = true }
 # Patch doesn't work as `pallet-elections-phragmen` is now 4.0.0 version. Revert `rev` to `rococo-v1` branch after
 # other `rococo-v1` dependencies upgraded.
  pallet-elections-phragmen = { version = "3.0.0", default-features = false }
-sp-io = "3.0.0"
+ sp-io = "3.0.0"
 
 
 [features]
@@ -40,5 +40,5 @@ std = [
 	"frame-system/std",
 	"parami-traits/std",
 	"getrandom/std",
-	"serde/std",
+	"serde",
 ]

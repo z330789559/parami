@@ -7,36 +7,37 @@ description = "swap token assets"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.101",  default-features = false, features = ["derive"], optional = true}
+serde = { version = "1.0.102", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-parami-traits = {  package="traits",   path = "../traits", version = "0.1.0" }
+parami-traits = {  package="traits",   path = "../traits",  default-features = false }
 
 sp-core = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 sp-runtime = { version = "3.0.0", default-features = false }
-sp-io = { version = "3.0.0", default-features = false }
 # frame dependencies
 frame-support = { version = "3.0.0", default-features = false }
 frame-system = { version = "3.0.0", default-features = false }
-getrandom = { version = "0.2.2", features = ["js"] , optional = true}
-[dev-dependencies]
-# sp-io = { version = "3.0.0", default-features = false }
- pallet-treasury ={ version = "3.0.0", default-features = false }
-# Patch doesn't work as `pallet-elections-phragmen` is now 4.0.0 version. Revert `rev` to `rococo-v1` branch after
-# other `rococo-v1` dependencies upgraded.
- pallet-elections-phragmen = { version = "3.0.0", default-features = false }
+#getrandom = { version = "0.2.2", features = ["js"] , optional = true}
+#
+#[dev-dependencies]
+## sp-io = { version = "3.0.0", default-features = false }
+#pallet-treasury ={ version = "3.0.0", default-features = false }
+## Patch doesn't work as `pallet-elections-phragmen` is now 4.0.0 version. Revert `rev` to `rococo-v1` branch after
+## other `rococo-v1` dependencies upgraded.
+#pallet-elections-phragmen = { version = "3.0.0", default-features = false }
+#sp-io = "3.0.0"
 
 [features]
 default = ["std"]
 std = [
 	"sp-core/std",
-	"sp-io/std",
 	"codec/std",
 	"sp-std/std",
+	"parami-traits/std",
 	"frame-support/std",
 	"sp-runtime/std",
 	"frame-system/std",
-	"getrandom/std",
+#	"getrandom/std",
 	"serde",
 ]
 
