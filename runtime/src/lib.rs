@@ -52,16 +52,15 @@ pub use pallet_transaction_payment::{
     CurrencyAdapter, FeeDetails, Multiplier, TargetedFeeAdjustment,
 };
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
+use parami_node_primitives as primitives;
 pub use parami_node_primitives::{AccountId, Signature};
 use parami_node_primitives::{AccountIndex, Balance, BlockNumber, Index, Moment};
-use parami_node_primitives as primitives;
 use sp_api::impl_runtime_apis;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_core::{
     crypto::KeyTypeId,
-    TypeId,
     u32_trait::{_1, _2, _3, _4},
-    OpaqueMetadata,
+    OpaqueMetadata, TypeId,
 };
 use sp_inherents::{CheckInherentsResult, InherentData};
 use sp_runtime::curve::PiecewiseLinear;
@@ -73,9 +72,8 @@ use sp_runtime::transaction_validity::{
     TransactionPriority, TransactionSource, TransactionValidity,
 };
 use sp_runtime::{
-    AccountId32,
-    create_runtime_str, generic, impl_opaque_keys, ApplyExtrinsicResult, FixedPointNumber,
-    ModuleId, PerThing, Perbill, Percent, Permill, Perquintill
+    create_runtime_str, generic, impl_opaque_keys, AccountId32, ApplyExtrinsicResult,
+    FixedPointNumber, ModuleId, PerThing, Perbill, Percent, Permill, Perquintill,
 };
 #[cfg(any(feature = "std", test))]
 use sp_version::NativeVersion;
@@ -89,9 +87,9 @@ pub use pallet_balances::Call as BalancesCall;
 #[cfg(any(feature = "std", test))]
 pub use pallet_staking::StakerStatus;
 
+use parami_tokens::TransferDust;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-use parami_tokens::{TransferDust};
 /// Implementations of some helper traits passed into runtime modules as associated types.
 pub mod impls;
 use impls::Author;
@@ -100,8 +98,7 @@ use impls::Author;
 pub mod constants;
 use constants::{currency::*, time::*};
 
-
-use parami_traits::{Balance as ParamiBalance ,CurrencyId};
+use parami_traits::{Balance as ParamiBalance, CurrencyId};
 // mod oracle;
 // mod prices;
 // Make the WASM binary available.
@@ -232,7 +229,6 @@ impl frame_system::Config for Runtime {
     type SS58Prefix = SS58Prefix;
 }
 
-
 parameter_types! {
 
      pub DustAccount: AccountId32 =AccountId32::new([1u8;32]);
@@ -252,8 +248,6 @@ parami_traits::parameter_type_with_key! {
     };
 }
 
-
-
 impl parami_tokens::Config for Runtime {
     type Event = Event;
     type Balance = Balance;
@@ -264,11 +258,10 @@ impl parami_tokens::Config for Runtime {
     type OnDust = TransferDust<Runtime, DustAccount>;
 }
 
-
-impl parami_swap::Config for Runtime{
-	type Event = Event;
-   type Currency = Balances;
-	type Tokens =Tokens;
+impl parami_swap::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type Tokens = Tokens;
 }
 
 parameter_types! {
@@ -958,7 +951,7 @@ construct_runtime!(
         Bridge: parami_bridge::{Module, Storage, Call, Config<T>, Event<T>},
         Nft: parami_nft::{Module, Storage, Call, Config<T>, Event<T>},
         Tokens: parami_tokens::{Module, Storage, Call,Event<T>, Config<T>},
-		Swap: parami_swap::{Module, Storage, Call,Event<T>, Config<T>},
+        Swap: parami_swap::{Module, Storage, Call,Event<T>, Config<T>},
         // Oracle: oracle::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 
     }

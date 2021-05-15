@@ -26,7 +26,7 @@ use parami_node_runtime::{
     AdsConfig, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig, ContractsConfig,
     CouncilConfig, DemocracyConfig, DidConfig, ElectionsPhragmenConfig, GrandpaConfig,
     ImOnlineConfig, IndicesConfig, SessionConfig, SessionKeys, StakerStatus, StakingConfig,
-    SudoConfig, SystemConfig, TechnicalCommitteeConfig, WASM_BINARY,TokensConfig,SwapConfig
+    SudoConfig, SwapConfig, SystemConfig, TechnicalCommitteeConfig, TokensConfig, WASM_BINARY,
 };
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::ChainType;
@@ -292,10 +292,10 @@ pub fn testnet_genesis(
         }),
         parami_bridge: Some(Default::default()),
         parami_nft: Some(Default::default()),
-        parami_tokens: Some(TokensConfig{
-            endowed_accounts: vec!()
+        parami_tokens: Some(TokensConfig {
+            endowed_accounts: vec![],
         }),
-		parami_swap:Some(Default::default())
+        parami_swap: Some(Default::default()),
     }
 }
 
@@ -477,9 +477,9 @@ fn parami_genesis(
         parami_bridge: Some(Default::default()),
         parami_nft: Some(Default::default()),
         parami_tokens: Some(TokensConfig {
-            endowed_accounts: vec![]
+            endowed_accounts: vec![],
         }),
-		parami_swap:Some(Default::default()),
+        parami_swap: Some(Default::default()),
     }
 }
 
